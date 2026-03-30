@@ -12,21 +12,21 @@
       "titulo": "Módulo 2",
       "descricao": "Tomada de decisão rápida em momentos críticos da partida.",
       "imagem": "modulo2.jpg",
-      "status": "in-progress"
+      "status": "completed"
     },
     {
       "id": "3",
       "titulo": "Módulo 3",
       "descricao": "Game Sense: leitura do jogo, posicionamento e antecipação.",
       "imagem": "modulo3.jpg",
-      "status": "locked"
+      "status": "completed"
     },
     {
       "id": "4",
       "titulo": "Módulo 4",
       "descricao": "Estratégias aplicadas no Fortnite.",
       "imagem": "modulo4.jpg",
-      "status": "locked"
+      "status": "completed"
     },
     {
       "id": "5",
@@ -232,6 +232,5 @@
       "status": "in-progress",
       "progresso": 45
     }
-  ],
-  "$schema": "./node_modules/json-server/schema.json"
+  ]
 }
