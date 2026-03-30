@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro — Compt</title>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="auth-body">
+
+  <div class="auth-bg">
+    <div class="auth-bg__orb auth-bg__orb--1"></div>
+    <div class="auth-bg__orb auth-bg__orb--2"></div>
+    <div class="auth-bg__grid"></div>
+  </div>
+
+  <div class="auth-wrapper">
+
+    <!-- LADO ESQUERDO: branding -->
+    <div class="auth-brand">
+      <img src="img/logo.png" class="auth-logo" alt="Compt">
+      <h1 class="auth-brand__title">Comece<br>sua jornada<br><span>agora.</span></h1>
+      <p class="auth-brand__sub">
+        Crie sua conta gratuita e acesse módulos de treinamento, estatísticas e comunidade.
+      </p>
+      <div class="auth-brand__tags">
+        <span>Fortnite</span>
+        <span>Rainbow Six</span>
+        <span>Clash Royale</span>
+      </div>
+    </div>
+
+    <!-- LADO DIREITO: formulário -->
+    <div class="auth-card">
+
+      <div class="auth-card__header">
+        <h2>Criar conta</h2>
+        <p>Preencha os dados abaixo para começar.</p>
+      </div>
+
+      <div id="auth-error" class="auth-error" style="display:none"></div>
+
+      <div class="auth-form">
+
+        <div class="auth-field">
+          <label for="cad-nome">Nome de usuário</label>
+          <input
+            type="text"
+            id="cad-nome"
+            placeholder="Ex: HenriqueGG"
+            maxlength="30"
+            autocomplete="username"
+          >
+        </div>
+
+        <div class="auth-field">
+          <label for="cad-email">E-mail</label>
+          <input
+            type="email"
+            id="cad-email"
+            placeholder="seu@email.com"
+            autocomplete="email"
+          >
+        </div>
+
+        <div class="auth-field">
+          <label for="cad-senha">Senha</label>
+          <div class="auth-field__password">
+            <input
+              type="password"
+              id="cad-senha"
+              placeholder="Mínimo 6 caracteres"
+              autocomplete="new-password"
+            >
+            <button class="toggle-pw" type="button" onclick="toggleSenha('cad-senha', this)">
+              👁
+            </button>
+          </div>
+        </div>
+
+        <div class="auth-field">
+          <label for="cad-confirma">Confirmar senha</label>
+          <div class="auth-field__password">
+            <input
+              type="password"
+              id="cad-confirma"
+              placeholder="Repita a senha"
+              autocomplete="new-password"
+            >
+            <button class="toggle-pw" type="button" onclick="toggleSenha('cad-confirma', this)">
+              👁
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-auth" onclick="fazerCadastro()">
+          <span>Criar conta</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+
+      </div>
+
+      <p class="auth-footer">
+        Já tem conta?
+        <a href="login.html">Fazer login</a>
+      </p>
+
+    </div>
+
+  </div>
+
+  <script src="auth.js"></script>
+
+</body>
+</html>

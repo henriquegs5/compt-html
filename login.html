@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Compt</title>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="auth-body">
+
+  <div class="auth-bg">
+    <div class="auth-bg__orb auth-bg__orb--1"></div>
+    <div class="auth-bg__orb auth-bg__orb--2"></div>
+    <div class="auth-bg__grid"></div>
+  </div>
+
+  <div class="auth-wrapper">
+
+    <!-- LADO ESQUERDO: branding -->
+    <div class="auth-brand">
+      <img src="img/logo.png" class="auth-logo" alt="Compt">
+      <h1 class="auth-brand__title">Evolua.<br>Compete.<br><span>Domine.</span></h1>
+      <p class="auth-brand__sub">
+        A plataforma de treinamento para jogadores que levam o competitivo a sério.
+      </p>
+      <div class="auth-brand__tags">
+        <span>Fortnite</span>
+        <span>Rainbow Six</span>
+        <span>Clash Royale</span>
+      </div>
+    </div>
+
+    <!-- LADO DIREITO: formulário -->
+    <div class="auth-card">
+
+      <div class="auth-card__header">
+        <h2>Entrar na sua conta</h2>
+        <p>Bem-vindo de volta, jogador.</p>
+      </div>
+
+      <div id="auth-error" class="auth-error" style="display:none"></div>
+
+      <div class="auth-form">
+
+        <div class="auth-field">
+          <label for="login-email">E-mail</label>
+          <input
+            type="email"
+            id="login-email"
+            placeholder="seu@email.com"
+            autocomplete="email"
+          >
+        </div>
+
+        <div class="auth-field">
+          <label for="login-senha">Senha</label>
+          <div class="auth-field__password">
+            <input
+              type="password"
+              id="login-senha"
+              placeholder="••••••••"
+              autocomplete="current-password"
+            >
+            <button class="toggle-pw" type="button" onclick="toggleSenha('login-senha', this)">
+              👁
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-auth" onclick="fazerLogin()">
+          <span>Entrar</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+
+      </div>
+
+      <p class="auth-footer">
+        Não tem conta?
+        <a href="cadastro.html">Criar conta grátis</a>
+      </p>
+
+    </div>
+
+  </div>
+
+  <script src="auth.js"></script>
+
+</body>
+</html>
