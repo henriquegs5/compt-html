@@ -1,0 +1,53 @@
+/* ===================================
+   Estatísticas
+   =================================== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.4rem;
+}
+
+.game-stats {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4rem;
+}
+
+.game-header {
+  display: flex; align-items: center; gap: .8rem; margin-bottom: 1.2rem;
+}
+.game-header img {
+  width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: var(--surface2);
+}
+.game-header h3 { font-size: 1.05rem; font-weight: 600; }
+
+.rank-box {
+  display: flex; align-items: center; gap: .8rem;
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: .8rem 1rem;
+  margin-bottom: 1.2rem;
+}
+.rank-icon  { width: 40px; height: 40px; object-fit: contain; }
+.rank-title { font-size: .75rem; color: var(--text-muted); }
+.rank-box h2 { font-size: 1.1rem; }
+
+.stats-list { display: flex; flex-direction: column; gap: .6rem; }
+.stats-list > div {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: .9rem;
+}
+.stats-list p      { color: var(--text-muted); }
+.stats-list strong { font-size: 1.05rem; font-weight: 600; }
+
+/* Win Rate ring */
+.win-rate-chart { text-align: center; margin-bottom: 1rem; }
+.wr-label { font-size: .8rem; color: var(--text-muted); margin-bottom: .4rem; }
+.wr-ring-wrap { position: relative; width: 80px; margin: 0 auto; }
+.wr-ring { width: 80px; height: 80px; transform: rotate(-90deg); }
+.wr-pct {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 700; color: var(--primary);
+}

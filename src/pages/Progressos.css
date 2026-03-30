@@ -1,0 +1,64 @@
+/* ===================================
+   Progressos
+   =================================== */
+.progress-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4rem;
+  text-align: center;
+}
+.stat-card h3 { font-size: 2rem; color: var(--primary); margin-bottom: .4rem; }
+.stat-card p  { font-size: .85rem; color: var(--text-muted); }
+
+.overall-progress { margin-top: 1.2rem; }
+.overall-progress__header {
+  display: flex; justify-content: space-between;
+  font-size: .9rem; color: var(--text-muted); margin-bottom: .5rem;
+}
+.overall-progress__pct { font-weight: 600; color: var(--primary); }
+.overall-progress__bar {
+  height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden;
+}
+.overall-progress__fill {
+  height: 100%; background: var(--primary); border-radius: 4px;
+  transition: width .6s ease;
+}
+
+.title-small { font-size: 1.1rem; font-weight: 600; margin: 2rem 0 1rem; }
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.2rem;
+}
+
+.video-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.video-thumb { position: relative; }
+.video-thumb img { width: 100%; height: 130px; object-fit: cover; background: var(--surface2); }
+
+.status, .status-progress {
+  position: absolute;
+  bottom: .5rem; left: .5rem;
+  font-size: .75rem; font-weight: 600; padding: .25rem .6rem; border-radius: 20px;
+}
+.status          { background: rgba(76,175,124,.2); color: var(--success); }
+.status-progress { background: rgba(240,165,0,.2);  color: var(--warning);  }
+
+.video-card h4 { padding: .8rem 1rem .6rem; font-size: .9rem; }
+
+.progress-bar  { height: 4px; background: var(--surface2); margin: 0 1rem .8rem; border-radius: 2px; }
+.progress-fill { height: 100%; background: var(--primary); border-radius: 2px; }
