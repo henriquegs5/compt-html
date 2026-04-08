@@ -4,6 +4,7 @@ import modulosReducer from './modulosSlice'
 import perfilReducer from './perfilSlice'
 import chatReducer from './chatSlice'
 import estatisticasReducer from './estatisticasSlice'
+import subscriptionReducer from "./subscriptionSlice"
 
 export const store = configureStore({
   reducer: {
@@ -12,5 +13,6 @@ export const store = configureStore({
     perfil: perfilReducer,
     chat: chatReducer,
     estatisticas: estatisticasReducer,
+    subscription: subscriptionReducer,
   },
 })
