@@ -7,6 +7,7 @@ import Progressos   from './pages/Progressos'
 import Comunidade   from './pages/Comunidade'
 import Estatisticas from './pages/Estatisticas'
 import Perfil       from './pages/Perfil'
+import Subscription from './pages/Subscription'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function PublicRoute({ children }) {
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/comunidade"   element={<ProtectedRoute><Comunidade /></ProtectedRoute>} />
         <Route path="/estatisticas" element={<ProtectedRoute><Estatisticas /></ProtectedRoute>} />
         <Route path="/perfil"       element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
+        <Route path="/assinatura"   element={<ProtectedRoute><Subscription /></ProtectedRoute>}/>
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
