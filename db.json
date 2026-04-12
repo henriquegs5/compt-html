@@ -1,45 +1,145 @@
 {
+  "cursos": [
+    {
+      "id": "1",
+      "titulo": "Fortnite",
+      "descricao": "Domine o battle royale mais popular do mundo com estratégias de construção e posicionamento.",
+      "imagem": "fortnite.jpg",
+      "totalModulos": 4
+    },
+    {
+      "id": "2",
+      "titulo": "League of Legends",
+      "descricao": "Aprenda macro, micro e estratégia no maior MOBA do mundo.",
+      "imagem": "lol.jpg",
+      "totalModulos": 4
+    },
+    {
+      "id": "3",
+      "titulo": "Rainbow Six Siege",
+      "descricao": "Posicionamento, gadgets e trabalho em equipe no FPS tático.",
+      "imagem": "rainbow.jpg",
+      "totalModulos": 3
+    },
+    {
+      "id": "4",
+      "titulo": "Clash Royale",
+      "descricao": "Controle de elixir, decks e estratégia competitiva no card game.",
+      "imagem": "clash.jpg",
+      "totalModulos": 3
+    }
+  ],
   "modulos": [
     {
       "id": "1",
-      "titulo": "Módulo 1",
-      "descricao": "Mentalidade competitiva. Como pensar como um jogador de alto nível.",
-      "imagem": "modulo1.jpg",
+      "cursoId": "1",
+      "titulo": "Módulo 1 - Mentalidade Competitiva",
+      "descricao": "Como pensar como um jogador de alto nível.",
+      "imagem": "fortnite.jpg",
       "status": "completed"
     },
     {
       "id": "2",
-      "titulo": "Módulo 2",
+      "cursoId": "1",
+      "titulo": "Módulo 2 - Tomada de Decisão",
       "descricao": "Tomada de decisão rápida em momentos críticos da partida.",
-      "imagem": "modulo2.jpg",
+      "imagem": "fortnite.jpg",
       "status": "completed"
     },
     {
       "id": "3",
-      "titulo": "Módulo 3",
-      "descricao": "Game Sense: leitura do jogo, posicionamento e antecipação.",
-      "imagem": "modulo3.jpg",
-      "status": "completed"
+      "cursoId": "1",
+      "titulo": "Módulo 3 - Game Sense",
+      "descricao": "Leitura do jogo, posicionamento e antecipação.",
+      "imagem": "fortnite.jpg",
+      "status": "in-progress"
     },
     {
       "id": "4",
-      "titulo": "Módulo 4",
-      "descricao": "Estratégias aplicadas no Fortnite.",
-      "imagem": "modulo4.jpg",
-      "status": "completed"
-    },
-    {
-      "id": "5",
-      "titulo": "Módulo 5",
-      "descricao": "Rainbow Six: posicionamento e leitura de mapa.",
-      "imagem": "modulo5.jpg",
+      "cursoId": "1",
+      "titulo": "Módulo 4 - Estratégias Avançadas",
+      "descricao": "Estratégias aplicadas no Fortnite competitivo.",
+      "imagem": "fortnite.jpg",
       "status": "locked"
     },
     {
+      "id": "5",
+      "cursoId": "2",
+      "titulo": "Módulo 1 - Fundamentos do LoL",
+      "descricao": "CS, wave management e noções básicas do mapa.",
+      "imagem": "lol.jpg",
+      "status": "completed"
+    },
+    {
       "id": "6",
-      "titulo": "Módulo 6",
+      "cursoId": "2",
+      "titulo": "Módulo 2 - Domínio de Lane",
+      "descricao": "Como dominar sua lane e pressionar o adversário.",
+      "imagem": "lol.jpg",
+      "status": "in-progress"
+    },
+    {
+      "id": "7",
+      "cursoId": "2",
+      "titulo": "Módulo 3 - Macro Game",
+      "descricao": "Rotação, objetivos e visão de mapa.",
+      "imagem": "lol.jpg",
+      "status": "locked"
+    },
+    {
+      "id": "8",
+      "cursoId": "2",
+      "titulo": "Módulo 4 - Teamfight",
+      "descricao": "Posicionamento e priorização de alvos em teamfights.",
+      "imagem": "lol.jpg",
+      "status": "locked"
+    },
+    {
+      "id": "9",
+      "cursoId": "3",
+      "titulo": "Módulo 1 - Fundamentos do Siege",
+      "descricao": "Mecânicas básicas, gadgets e comunicação.",
+      "imagem": "rainbow.jpg",
+      "status": "completed"
+    },
+    {
+      "id": "10",
+      "cursoId": "3",
+      "titulo": "Módulo 2 - Posicionamento e Leitura de Mapa",
+      "descricao": "Rainbow Six: posicionamento e leitura de mapa.",
+      "imagem": "rainbow.jpg",
+      "status": "in-progress"
+    },
+    {
+      "id": "11",
+      "cursoId": "3",
+      "titulo": "Módulo 3 - Operadores e Estratégias",
+      "descricao": "Escolha de operadores e estratégias por situação.",
+      "imagem": "rainbow.jpg",
+      "status": "locked"
+    },
+    {
+      "id": "12",
+      "cursoId": "4",
+      "titulo": "Módulo 1 - Controle de Elixir",
       "descricao": "Clash Royale: controle de elixir e estratégia.",
-      "imagem": "modulo6.jpg",
+      "imagem": "clash.jpg",
+      "status": "completed"
+    },
+    {
+      "id": "13",
+      "cursoId": "4",
+      "titulo": "Módulo 2 - Construção de Deck",
+      "descricao": "Como montar decks competitivos e equilibrados.",
+      "imagem": "clash.jpg",
+      "status": "locked"
+    },
+    {
+      "id": "14",
+      "cursoId": "4",
+      "titulo": "Módulo 3 - Ladder e Torneios",
+      "descricao": "Estratégias para escalar o ladder e competir em torneios.",
+      "imagem": "clash.jpg",
       "status": "locked"
     }
   ],
@@ -58,21 +158,9 @@
       "rank": "Surreal",
       "rankIcone": "surreal.png",
       "stats": [
-        {
-          "label": "Vitórias",
-          "valor": 86,
-          "decimal": false
-        },
-        {
-          "label": "Kills",
-          "valor": 2430,
-          "decimal": false
-        },
-        {
-          "label": "Partidas",
-          "valor": 540,
-          "decimal": false
-        }
+        { "label": "Vitórias", "valor": 86,   "decimal": false },
+        { "label": "Kills",    "valor": 2430,  "decimal": false },
+        { "label": "Partidas", "valor": 540,   "decimal": false }
       ]
     },
     {
@@ -82,21 +170,9 @@
       "rank": "Diamante",
       "rankIcone": "diamante.png",
       "stats": [
-        {
-          "label": "KD",
-          "valor": 1.78,
-          "decimal": true
-        },
-        {
-          "label": "Kills",
-          "valor": 3120,
-          "decimal": false
-        },
-        {
-          "label": "Partidas",
-          "valor": 870,
-          "decimal": false
-        }
+        { "label": "KD",       "valor": 1.78,  "decimal": true  },
+        { "label": "Kills",    "valor": 3120,  "decimal": false },
+        { "label": "Partidas", "valor": 870,   "decimal": false }
       ]
     },
     {
@@ -106,131 +182,29 @@
       "rank": "12.700 🏆",
       "rankIcone": null,
       "stats": [
-        {
-          "label": "Vitórias",
-          "valor": 1940,
-          "decimal": false
-        },
-        {
-          "label": "Derrotas",
-          "valor": 720,
-          "decimal": false
-        },
-        {
-          "label": "Partidas",
-          "valor": 2660,
-          "decimal": false
-        }
+        { "label": "Vitórias", "valor": 1940,  "decimal": false },
+        { "label": "Derrotas", "valor": 720,   "decimal": false },
+        { "label": "Partidas", "valor": 2660,  "decimal": false }
       ]
     }
   ],
   "mensagens": [
-    {
-      "id": "1",
-      "canal": "geral",
-      "user": "MatheusGG",
-      "text": "Galera, alguém terminou o módulo 3?",
-      "time": "14:22"
-    },
-    {
-      "id": "2",
-      "canal": "geral",
-      "user": "CarolFPS",
-      "text": "Sim! O conteúdo de game sense é incrível",
-      "time": "14:25"
-    },
-    {
-      "id": "3",
-      "canal": "geral",
-      "user": "rafa_plays",
-      "text": "Recomendo assistir duas vezes, tem muito detalhe",
-      "time": "14:31"
-    },
-    {
-      "id": "4",
-      "canal": "fortnite",
-      "user": "ZeroBuilds",
-      "text": "Alguém treina no Aim Lab antes das partidas?",
-      "time": "13:10"
-    },
-    {
-      "id": "5",
-      "canal": "fortnite",
-      "user": "Storm_King",
-      "text": "Todo dia! 30 min antes de entrar — faz diferença",
-      "time": "13:15"
-    },
-    {
-      "id": "6",
-      "canal": "fortnite",
-      "user": "BruhMoment",
-      "text": "Qual sensibilidade vocês usam?",
-      "time": "13:40"
-    },
-    {
-      "id": "7",
-      "canal": "rainbow",
-      "user": "SiegeMain",
-      "text": "Melhores ops para defesa no Platinum?",
-      "time": "11:40"
-    },
-    {
-      "id": "8",
-      "canal": "rainbow",
-      "user": "TwitchPro",
-      "text": "Jäger e Bandit são fundamentais",
-      "time": "11:45"
-    },
-    {
-      "id": "9",
-      "canal": "rainbow",
-      "user": "GadgetKing",
-      "text": "Clash no ataque também fecha muito",
-      "time": "11:52"
-    },
-    {
-      "id": "10",
-      "canal": "clash",
-      "user": "CrownGG",
-      "text": "Qual deck tá dominando o ladder agora?",
-      "time": "09:20"
-    },
-    {
-      "id": "11",
-      "canal": "clash",
-      "user": "Electro_P",
-      "text": "Goblin Giant + Sparky ainda é absurdo",
-      "time": "09:25"
-    },
-    {
-      "id": "12",
-      "canal": "clash",
-      "user": "CrownGG",
-      "text": "Vou testar. Obrigado!",
-      "time": "09:27"
-    }
+    { "id": "1",  "canal": "geral",    "user": "MatheusGG",  "text": "Galera, alguém terminou o módulo 3?",             "time": "14:22" },
+    { "id": "2",  "canal": "geral",    "user": "CarolFPS",   "text": "Sim! O conteúdo de game sense é incrível",         "time": "14:25" },
+    { "id": "3",  "canal": "geral",    "user": "rafa_plays", "text": "Recomendo assistir duas vezes, tem muito detalhe", "time": "14:31" },
+    { "id": "4",  "canal": "fortnite", "user": "ZeroBuilds", "text": "Alguém treina no Aim Lab antes das partidas?",     "time": "13:10" },
+    { "id": "5",  "canal": "fortnite", "user": "Storm_King", "text": "Todo dia! 30 min antes de entrar — faz diferença", "time": "13:15" },
+    { "id": "6",  "canal": "fortnite", "user": "BruhMoment", "text": "Qual sensibilidade vocês usam?",                   "time": "13:40" },
+    { "id": "7",  "canal": "rainbow",  "user": "SiegeMain",  "text": "Melhores ops para defesa no Platinum?",            "time": "11:40" },
+    { "id": "8",  "canal": "rainbow",  "user": "TwitchPro",  "text": "Jäger e Bandit são fundamentais",                  "time": "11:45" },
+    { "id": "9",  "canal": "rainbow",  "user": "GadgetKing", "text": "Clash no ataque também fecha muito",               "time": "11:52" },
+    { "id": "10", "canal": "clash",    "user": "CrownGG",    "text": "Qual deck tá dominando o ladder agora?",           "time": "09:20" },
+    { "id": "11", "canal": "clash",    "user": "Electro_P",  "text": "Goblin Giant + Sparky ainda é absurdo",            "time": "09:25" },
+    { "id": "12", "canal": "clash",    "user": "CrownGG",    "text": "Vou testar. Obrigado!",                            "time": "09:27" }
   ],
   "videos": [
-    {
-      "id": "1",
-      "titulo": "Treino de Mira Fortnite",
-      "imagem": "fortnite.jpg",
-      "status": "completed",
-      "progresso": 100
-    },
-    {
-      "id": "2",
-      "titulo": "Controle de Recoil Rainbow Six",
-      "imagem": "rainbow.jpg",
-      "status": "completed",
-      "progresso": 100
-    },
-    {
-      "id": "3",
-      "titulo": "Deck competitivo Clash Royale",
-      "imagem": "clash.jpg",
-      "status": "in-progress",
-      "progresso": 45
-    }
+    { "id": "1", "titulo": "Treino de Mira Fortnite",        "imagem": "fortnite.jpg", "status": "completed",   "progresso": 100 },
+    { "id": "2", "titulo": "Controle de Recoil Rainbow Six", "imagem": "rainbow.jpg",  "status": "completed",   "progresso": 100 },
+    { "id": "3", "titulo": "Deck competitivo Clash Royale",  "imagem": "clash.jpg",    "status": "in-progress", "progresso": 45  }
   ]
 }
