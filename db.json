@@ -33,14 +33,14 @@
       "titulo": "Módulo 5",
       "descricao": "Rainbow Six: posicionamento e leitura de mapa.",
       "imagem": "modulo5.jpg",
-      "status": "locked"
+      "status": "completed"
     },
     {
       "id": "6",
       "titulo": "Módulo 6",
       "descricao": "Clash Royale: controle de elixir e estratégia.",
       "imagem": "modulo6.jpg",
-      "status": "locked"
+      "status": "completed"
     }
   ],
   "perfil": {
@@ -232,5 +232,6 @@
       "status": "in-progress",
       "progresso": 45
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }
