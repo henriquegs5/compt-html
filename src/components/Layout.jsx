@@ -24,7 +24,6 @@ export default function Layout({ children }) {
           <span className="logo-text">COMPT</span>
         </div>
 
-        <input type="text" placeholder="Pesquisar módulos..." className="search" />
 
         <div className="user-area">
           <span className="username">{usuario?.name ?? 'Usuário'}</span>

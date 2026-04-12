@@ -1,0 +1,89 @@
+.title    { font-size: 1.6rem; font-weight: 600; margin-bottom: .4rem; }
+.subtitle { font-size: .95rem; color: var(--text-muted); margin-bottom: 2rem; }
+
+.cursos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.6rem;
+}
+
+.curso-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+.curso-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: 0 8px 28px rgba(105, 242, 196, .12);
+}
+
+.curso-image {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  background: var(--surface2);
+  overflow: hidden;
+}
+.curso-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .4s ease;
+}
+.curso-card:hover .curso-image img { transform: scale(1.04); }
+
+.curso-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(15,17,23,.85) 100%);
+}
+
+.curso-body {
+  padding: 1rem 1.2rem 1.2rem;
+}
+
+.curso-titulo {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: .4rem;
+}
+
+.curso-descricao {
+  font-size: .85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 1.1rem;
+}
+
+.curso-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.curso-modulos-count {
+  font-size: .8rem;
+  color: var(--text-muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: .3rem .7rem;
+  border-radius: 20px;
+}
+
+.btn-abrir-curso {
+  background: var(--primary);
+  color: #0f1117;
+  border: none;
+  padding: .5rem 1.2rem;
+  border-radius: var(--radius);
+  font-size: .88rem;
+  font-weight: 600;
+  transition: background var(--transition), transform var(--transition);
+}
+.btn-abrir-curso:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}

@@ -23,20 +23,21 @@
   letter-spacing: .1em;
 }
 
-.search {
-  flex: 1;
-  max-width: 340px;
+.page-search {
+  width: 100%;
+  max-width: 400px;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--text);
-  padding: .5rem 1rem;
+  padding: .6rem 1rem;
   font-family: inherit;
-  font-size: .9rem;
+  font-size: .95rem;
+  margin-bottom: 2rem;
   transition: border-color var(--transition);
 }
-.search:focus { outline: none; border-color: var(--primary); }
-.search::placeholder { color: var(--text-muted); }
+.page-search:focus { outline: none; border-color: var(--primary); }
+.page-search::placeholder { color: var(--text-muted); }
 
 .user-area {
   display: flex;
@@ -145,5 +146,5 @@
   #menu-toggle:checked ~ .overlay { display: block; }
 
   .content { margin-left: 0; padding: 1.2rem; }
-  .search  { max-width: 160px; }
+  .page-search { max-width: 100%; }
 }
