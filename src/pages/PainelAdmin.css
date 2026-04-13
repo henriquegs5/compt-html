@@ -1,0 +1,167 @@
+/* ===================================
+   PainelAdmin — Estilos do painel de administração
+   =================================== */
+
+/* Título e subtítulo do painel */
+.admin-titulo {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: .3rem;
+}
+
+.admin-subtitulo {
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+  font-size: .95rem;
+}
+
+/* Wrapper da tabela com scroll horizontal em telas pequenas */
+.admin-tabela-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* Tabela de usuários */
+.admin-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .92rem;
+}
+
+.admin-tabela thead {
+  background: var(--surface2);
+}
+
+.admin-tabela th {
+  text-align: left;
+  padding: .85rem 1rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-size: .85rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.admin-tabela td {
+  padding: .75rem 1rem;
+  border-top: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+/* Linha com hover */
+.admin-tabela tbody tr:hover {
+  background: rgba(124, 106, 255, .04);
+}
+
+/* Célula do usuário (avatar + nome) — div interna ao <td> para evitar
+   bug de layout (display:flex direto em <td> quebra alinhamento da tabela) */
+.admin-user-cell {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+.admin-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+
+/* ---- Badges de cargo ---- */
+/* Cada cargo tem uma cor diferente para fácil identificação */
+.admin-badge {
+  display: inline-block;
+  padding: .25rem .7rem;
+  border-radius: 999px;
+  font-size: .8rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+/* Badge verde para cliente (acesso básico) */
+.admin-badge--cliente {
+  background: rgba(76, 175, 124, .15);
+  color: var(--success);
+}
+
+/* Badge amarelo para moderador (acesso intermediário) */
+.admin-badge--moderador {
+  background: rgba(240, 165, 0, .15);
+  color: var(--warning);
+}
+
+/* Badge roxo/primário para admin (acesso total) */
+.admin-badge--admin {
+  background: rgba(105, 242, 196, .15);
+  color: var(--primary);
+}
+
+/* ---- Botões de ação ---- */
+.admin-acoes {
+  display: flex;
+  gap: .5rem;
+}
+
+.admin-btn {
+  padding: .35rem .75rem;
+  border: none;
+  border-radius: 6px;
+  font-size: .82rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.admin-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Botão de promover (verde) */
+.admin-btn--promover {
+  background: rgba(76, 175, 124, .2);
+  color: var(--success);
+}
+.admin-btn--promover:hover {
+  background: rgba(76, 175, 124, .35);
+}
+
+/* Botão de despromover (amarelo) */
+.admin-btn--despromover {
+  background: rgba(240, 165, 0, .2);
+  color: var(--warning);
+}
+.admin-btn--despromover:hover {
+  background: rgba(240, 165, 0, .35);
+}
+
+/* Botão de remover (vermelho) */
+.admin-btn--remover {
+  background: rgba(224, 80, 80, .2);
+  color: var(--error);
+}
+.admin-btn--remover:hover {
+  background: rgba(224, 80, 80, .35);
+}
+
+/* Mensagem quando nenhum usuário é encontrado */
+.admin-vazio {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+}
+
+/* ---- Responsivo ---- */
+@media (max-width: 768px) {
+  .admin-tabela {
+    font-size: .85rem;
+  }
+  .admin-tabela th,
+  .admin-tabela td {
+    padding: .6rem .5rem;
+  }
+}

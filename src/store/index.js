@@ -25,8 +25,10 @@ import perfilReducer       from './perfilSlice'
 import chatReducer         from './chatSlice'
 import estatisticasReducer from './estatisticasSlice'
 import subscriptionReducer from './subscriptionSlice'
+// Slice de gerenciamento de usuários — usado no painel admin/moderador
+import usersReducer        from './usersSlice'
 
-// essa e a store principal, onde ficam quardados os dados(estado global) 
+// essa e a store principal, onde ficam quardados os dados(estado global)
 // e os reducers q sao as regras q esses dados podem ser alterados
 export const store = configureStore({
   reducer: {
@@ -37,5 +39,7 @@ export const store = configureStore({
     chat:         chatReducer,
     estatisticas: estatisticasReducer,
     subscription: subscriptionReducer,
+    // Gerencia lista de usuários e alteração de cargos (admin/moderador)
+    users:        usersReducer,
   },
 })

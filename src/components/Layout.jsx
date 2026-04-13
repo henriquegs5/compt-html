@@ -8,6 +8,10 @@ export default function Layout({ children }) {
   const navigate = useNavigate()
   const usuario = useSelector(state => state.auth.usuario)
 
+  // Verifica se o usuário logado é admin ou moderador
+  // para exibir o link do painel de administração no sidebar
+  const isAdminOuMod = usuario?.role === 'admin' || usuario?.role === 'moderador'
+
   function handleLogout() {
     dispatch(fazerLogout())
     navigate('/login')
@@ -26,6 +30,12 @@ export default function Layout({ children }) {
 
 
         <div className="user-area">
+          {/* Badge exibindo o cargo do usuário ao lado do nome */}
+          {usuario?.role && (
+            <span className={`role-badge role-badge--${usuario.role}`}>
+              {usuario.role}
+            </span>
+          )}
           <span className="username">{usuario?.name ?? 'Usuário'}</span>
           <img
             className="avatar"
@@ -43,6 +53,10 @@ export default function Layout({ children }) {
           <NavLink to="/comunidade">Comunidade</NavLink>
           <NavLink to="/estatisticas">Estatísticas</NavLink>
           <NavLink to="/perfil">Perfil</NavLink>
+          {/* Link do painel admin — visível apenas para admin e moderador */}
+          {isAdminOuMod && (
+            <NavLink to="/admin">Painel Admin</NavLink>
+          )}
           <hr />
           <a href="#">Suporte</a>
           <a href="#">Configurações</a>

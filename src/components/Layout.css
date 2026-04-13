@@ -65,6 +65,36 @@
 }
 .btn-logout:hover { color: var(--error); }
 
+/* ---- Badge de cargo (role) no topbar ---- */
+/* Mostra o cargo do usuário logado com cores distintas */
+.role-badge {
+  display: inline-block;
+  padding: .15rem .55rem;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+/* Cliente = verde */
+.role-badge--cliente {
+  background: rgba(76, 175, 124, .15);
+  color: var(--success);
+}
+
+/* Moderador = amarelo */
+.role-badge--moderador {
+  background: rgba(240, 165, 0, .15);
+  color: var(--warning);
+}
+
+/* Admin = cor primária (verde-água) */
+.role-badge--admin {
+  background: rgba(105, 242, 196, .15);
+  color: var(--primary);
+}
+
 /* ---- Hamburger (mobile) ---- */
 #menu-toggle { display: none; }
 

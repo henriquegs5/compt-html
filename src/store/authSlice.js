@@ -23,6 +23,37 @@ function carregarUsuarios() {
   catch { return {} }
 }
 
+// ============================================================
+// Seed do admin padrão
+// Garante que sempre exista pelo menos um administrador no sistema.
+// Se nenhum usuário com role "admin" existir, cria automaticamente
+// um admin com credenciais padrão (admin@compt.com / admin123).
+// ============================================================
+function seedAdmin() {
+  const users = carregarUsuarios()
+  // Verifica se já existe algum admin cadastrado
+  const jaTemAdmin = Object.values(users).some(u => u.role === 'admin')
+  if (!jaTemAdmin) {
+    const uid = 'user_admin_seed'
+    users[uid] = {
+      uid,
+      name: 'Administrador',
+      email: 'admin@compt.com',
+      senha: hashSenha('admin123'),
+      bio: 'Administrador da plataforma Compt.',
+      avatarUrl: `https://i.pravatar.cc/80?u=${uid}`,
+      criadoEm: new Date().toISOString(),
+      // Campo role: define o nível de acesso do usuário
+      // Valores possíveis: "cliente" | "moderador" | "admin"
+      role: 'admin',
+    }
+    localStorage.setItem('compt_users', JSON.stringify(users))
+  }
+}
+
+// Executa o seed ao carregar o módulo (garante admin no primeiro acesso)
+seedAdmin()
+
 // ---- Thunks ----
 
 export const fazerLogin = createAsyncThunk(
@@ -32,7 +63,8 @@ export const fazerLogin = createAsyncThunk(
     const user = Object.values(users).find(u => u.email === email.toLowerCase())
     if (!user) return rejectWithValue('E-mail não encontrado.')
     if (user.senha !== hashSenha(senha)) return rejectWithValue('Senha incorreta.')
-    const sessao = { uid: user.uid, name: user.name, email: user.email }
+    // Sessão agora inclui o campo "role" para controle de acesso nas rotas
+    const sessao = { uid: user.uid, name: user.name, email: user.email, role: user.role }
     localStorage.setItem('compt_session', JSON.stringify(sessao))
     return sessao
   }
@@ -56,9 +88,12 @@ export const fazerCadastro = createAsyncThunk(
       bio: 'Jogador competitivo na plataforma Compt.',
       avatarUrl: `https://i.pravatar.cc/80?u=${uid}`,
       criadoEm: new Date().toISOString(),
+      // Todo usuário novo começa como "cliente" (acesso básico)
+      role: 'cliente',
     }
     localStorage.setItem('compt_users', JSON.stringify(users))
-    const sessao = { uid, name: nome, email: email.toLowerCase() }
+    // Sessão inclui role para que o Redux saiba o cargo imediatamente
+    const sessao = { uid, name: nome, email: email.toLowerCase(), role: 'cliente' }
     localStorage.setItem('compt_session', JSON.stringify(sessao))
     return sessao
   }
@@ -84,6 +119,16 @@ const authSlice = createSlice({
     limparErro(state) {
       state.erro = null
     },
+    // Atualiza o role do usuário logado no Redux e no localStorage
+    // Usado quando o admin altera o cargo de si mesmo ou quando
+    // a sessão precisa refletir uma mudança de cargo
+    atualizarRole(state, action) {
+      if (state.usuario) {
+        state.usuario.role = action.payload
+        // Persiste a mudança na sessão do localStorage
+        localStorage.setItem('compt_session', JSON.stringify(state.usuario))
+      }
+    },
   },
   extraReducers: (builder) => {
     const pending  = (state) => { state.status = 'loading'; state.erro = null }
@@ -104,5 +149,5 @@ const authSlice = createSlice({
   },
 })
 
-export const { fazerLogout, limparErro } = authSlice.actions
+export const { fazerLogout, limparErro, atualizarRole } = authSlice.actions
 export default authSlice.reducer

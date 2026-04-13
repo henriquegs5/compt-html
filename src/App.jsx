@@ -5,6 +5,11 @@
 // Como funciona a navegação?
 //   O React Router "ouve" a URL do navegador e renderiza o
 //   componente certo sem recarregar a página (Single Page App).
+//
+// Sistema de cargos (roles):
+//   - "cliente"    → acesso básico (rotas protegidas padrão)
+//   - "moderador"  → acesso ao painel admin (sem alterar cargos)
+//   - "admin"      → acesso total (painel admin + alterar cargos)
 // ============================================================
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
@@ -18,7 +23,11 @@ import Comunidade     from './pages/Comunidade'
 import Estatisticas   from './pages/Estatisticas'
 import Perfil         from './pages/Perfil'
 import Subscription   from './pages/Subscription'
+// Painel de administração — gerenciamento de usuários e cargos
+import PainelAdmin    from './pages/PainelAdmin'
 import ProtectedRoute from './components/ProtectedRoute'
+// RoleRoute — protege rotas que exigem um cargo específico (admin/moderador)
+import RoleRoute      from './components/RoleRoute'
 
 // ------------------------------------------------------------
 // PublicRoute — rota que só funciona quando NÃO está logado.
@@ -73,6 +82,17 @@ export default function App() {
         />
         <Route path="/assinatura"
           element={<ProtectedRoute><Subscription /></ProtectedRoute>}
+        />
+
+        {/* ---- Rota do painel de administração ---- */}
+        {/* Protegida por RoleRoute: só admin e moderador podem acessar.
+            Clientes que tentarem acessar /admin serão redirecionados para /. */}
+        <Route path="/admin"
+          element={
+            <RoleRoute rolesPermitidos={['admin', 'moderador']}>
+              <PainelAdmin />
+            </RoleRoute>
+          }
         />
 
         {/* Fallback: qualquer URL desconhecida volta para a home */}
