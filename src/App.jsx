@@ -23,6 +23,7 @@ import Comunidade     from './pages/Comunidade'
 import Estatisticas   from './pages/Estatisticas'
 import Perfil         from './pages/Perfil'
 import Subscription   from './pages/Subscription'
+import Config         from './pages/Config'
 // Painel de administração — gerenciamento de usuários e cargos
 import PainelAdmin    from './pages/PainelAdmin'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -82,6 +83,9 @@ export default function App() {
         />
         <Route path="/assinatura"
           element={<ProtectedRoute><Subscription /></ProtectedRoute>}
+        />
+        <Route path="/config"
+          element={<ProtectedRoute><Config /></ProtectedRoute>}
         />
 
         {/* ---- Rota do painel de administração ---- */}
