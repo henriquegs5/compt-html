@@ -1,14 +1,9 @@
-// ============================================================
-// store/usersSlice.js
-// Slice responsável pelo gerenciamento de usuários (painel admin).
-//
 // Funcionalidades:
 //   - Carregar todos os usuários cadastrados no localStorage
 //   - Alterar o cargo (role) de um usuário (somente admin)
 //   - Remover um usuário (admin e moderador)
 //
 // Os dados ficam em localStorage sob a chave "compt_users".
-// ============================================================
 
 import { createSlice } from '@reduxjs/toolkit'
 

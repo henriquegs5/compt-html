@@ -28,10 +28,6 @@ function montarPerfilInicial(usuario) {
   }
 }
 
-// Tenta montar o perfil a partir da sessão já salva no localStorage.
-// Isso é necessário porque ao recarregar a página o Redux reinicia do zero,
-// mas o usuário pode já estar logado (sessão persistida).
-// Sem isso, o perfil ficaria em loading infinito após um refresh.
 function montarPerfilDaSessao() {
   try {
     const sessao = JSON.parse(localStorage.getItem('compt_session'))
@@ -54,18 +50,11 @@ const perfilSlice = createSlice({
     erro:   null,
   },
 
-  // ---- Reducers: ações que mudam o estado do perfil ----
   reducers: {
-
-    // EDITAR PERFIL (Update) — atualiza os dados localmente na memória do Redux.
-    // action.payload pode conter: nome, bio e/ou ranks (array de objetos)
     updatePerfil(state, action) {
       // Mantém os dados antigos e só substitui os campos enviados
       state.dados = { ...state.dados, ...action.payload }
     },
-
-    // DELETAR PERFIL (Delete) — apaga os dados do perfil da memória local do Redux.
-    // Chamado quando o usuário confirma "Excluir Conta"
     deletarPerfil(state) {
       state.dados  = null
       state.status = 'idle'
@@ -77,9 +66,7 @@ const perfilSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      // LOGIN bem-sucedido → inicializa o perfil com os dados do usuário logado.
-      // Isso garante que o perfil sempre mostre o nome e avatar corretos,
-      // em vez de carregar um perfil genérico hardcoded do json-server.
+      // LOGIN bem-sucedido → inicializa o perfil com os dados do usuário logado..
       .addCase(fazerLogin.fulfilled, (state, action) => {
         state.status = 'succeeded'
         state.dados  = montarPerfilInicial(action.payload)
@@ -98,9 +85,5 @@ const perfilSlice = createSlice({
       })
   },
 })
-
-// Exporta as actions para serem usadas nos componentes
 export const { updatePerfil, deletarPerfil } = perfilSlice.actions
-
-// Exporta o reducer para ser registrado no store (index.js)
 export default perfilSlice.reducer

@@ -45,7 +45,7 @@
       "titulo": "Módulo 2 - Tomada de Decisão",
       "descricao": "Tomada de decisão rápida em momentos críticos da partida.",
       "imagem": "fortnite.jpg",
-      "status": "completed"
+      "status": "in-progress"
     },
     {
       "id": "3",
@@ -53,7 +53,7 @@
       "titulo": "Módulo 3 - Game Sense",
       "descricao": "Leitura do jogo, posicionamento e antecipação.",
       "imagem": "fortnite.jpg",
-      "status": "completed"
+      "status": "in-progress"
     },
     {
       "id": "4",
@@ -61,7 +61,7 @@
       "titulo": "Módulo 4 - Estratégias Avançadas",
       "descricao": "Estratégias aplicadas no Fortnite competitivo.",
       "imagem": "fortnite.jpg",
-      "status": "completed"
+      "status": "in-progress"
     },
     {
       "id": "5",

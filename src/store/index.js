@@ -1,21 +1,9 @@
-// ============================================================
-// store/index.js
-// Configura e exporta o store global do Redux.
-//
 // O que é o store?
 //   É o "banco de dados" da aplicação que fica na memória
 //   enquanto o site está aberto. Qualquer componente pode ler
 //   ou modificar esses dados sem precisar de props.
-//
+
 // Cada "reducer" cuida de uma fatia (slice) do estado:
-//   auth         → sessão do usuário (login/logout)
-//   modulos      → módulos genéricos (usado pela página antiga)
-//   cursos       → lista de cursos + módulos por curso (novo)
-//   perfil       → dados do perfil do usuário
-//   chat         → mensagens da comunidade
-//   estatisticas → stats dos jogos do usuário
-//   subscription → plano de assinatura
-// ============================================================
 
 import { configureStore } from '@reduxjs/toolkit'
 import authReducer         from './authSlice'
