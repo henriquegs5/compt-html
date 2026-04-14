@@ -83,6 +83,9 @@ img { max-width: 100%; display: block; }
   position: fixed; inset: 0;
   background: rgba(0,0,0,.6);
   display: flex; align-items: center; justify-content: center;
+  /* padding vertical garante espaço para rolar quando o modal é alto */
+  padding: 1.5rem 1rem;
+  overflow-y: auto;
   opacity: 0; transition: opacity .3s;
   z-index: 500;
 }
@@ -96,6 +99,10 @@ img { max-width: 100%; display: block; }
   min-width: 320px;
   max-width: 480px;
   width: 90%;
+  /* limita a altura e adiciona scroll interno quando o conteúdo
+     ultrapassa a tela (ex: zoom alto ou muitos campos) */
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .compt-modal-header {
