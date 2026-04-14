@@ -36,7 +36,8 @@
       "titulo": "Módulo 1 - Mentalidade Competitiva",
       "descricao": "Como pensar como um jogador de alto nível.",
       "imagem": "fortnite.jpg",
-      "status": "in-progress"
+      "status": "completed",
+      "link": ""
     },
     {
       "id": "2",
@@ -44,7 +45,7 @@
       "titulo": "Módulo 2 - Tomada de Decisão",
       "descricao": "Tomada de decisão rápida em momentos críticos da partida.",
       "imagem": "fortnite.jpg",
-      "status": "in-progress"
+      "status": "completed"
     },
     {
       "id": "3",
@@ -52,7 +53,7 @@
       "titulo": "Módulo 3 - Game Sense",
       "descricao": "Leitura do jogo, posicionamento e antecipação.",
       "imagem": "fortnite.jpg",
-      "status": "in-progress"
+      "status": "completed"
     },
     {
       "id": "4",
@@ -60,7 +61,7 @@
       "titulo": "Módulo 4 - Estratégias Avançadas",
       "descricao": "Estratégias aplicadas no Fortnite competitivo.",
       "imagem": "fortnite.jpg",
-      "status": "locked"
+      "status": "completed"
     },
     {
       "id": "5",
@@ -76,7 +77,7 @@
       "titulo": "Módulo 2 - Domínio de Lane",
       "descricao": "Como dominar sua lane e pressionar o adversário.",
       "imagem": "lol.jpg",
-      "status": "in-progress"
+      "status": "completed"
     },
     {
       "id": "7",
@@ -84,7 +85,7 @@
       "titulo": "Módulo 3 - Macro Game",
       "descricao": "Rotação, objetivos e visão de mapa.",
       "imagem": "lol.jpg",
-      "status": "locked"
+      "status": "in-progress"
     },
     {
       "id": "8",

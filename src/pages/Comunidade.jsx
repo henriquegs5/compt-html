@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { fetchMensagens, setCanal, addMensagem, removerMensagem } from '../store/chatSlice'
 import Layout from '../components/Layout'
 import './Comunidade.css'
-
+//maia
 const CANAIS = ['geral', 'fortnite', 'rainbow', 'clash']
 const LABEL  = { geral: 'GERAL', fortnite: 'FORTNITE', rainbow: 'RAINBOW SIX', clash: 'CLASH ROYALE' }
 

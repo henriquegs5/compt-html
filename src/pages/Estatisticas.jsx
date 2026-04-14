@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { fetchEstatisticas } from '../store/estatisticasSlice'
 import Layout from '../components/Layout'
 import './Estatisticas.css'
-
+//maia
 export default function Estatisticas() {
   const dispatch = useDispatch()
   const { items, status } = useSelector(s => s.estatisticas)

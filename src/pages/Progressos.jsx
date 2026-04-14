@@ -3,18 +3,18 @@ import { useDispatch, useSelector } from 'react-redux'
 import { fetchModulos } from '../store/modulosSlice'
 import Layout from '../components/Layout'
 import './Progressos.css'
-
+//maia
 export default function Progressos() {
   const dispatch = useDispatch()
   const { items, status } = useSelector(s => s.modulos)
 
-  useEffect(() => {
-    if (status === 'idle') dispatch(fetchModulos())
-  }, [dispatch, status])
+  useEffect(() => { 
+    // quando algo mudar no site executa esse codigo
+    dispatch(fetchModulos())//busca os modulos no slice
+  }, [dispatch])
 
   const concluidos  = items.filter(m => m.status === 'completed').length
   const emAndamento = items.filter(m => m.status === 'in-progress').length
-  const videos      = concluidos * 3 + emAndamento
   const pct         = items.length ? Math.round((concluidos / items.length) * 100) : 0
 
   return (
@@ -30,10 +30,6 @@ export default function Progressos() {
           <div className="stat-card">
             <h3>{emAndamento}</h3>
             <p>Em andamento</p>
-          </div>
-          <div className="stat-card">
-            <h3>{Math.max(12, videos)}</h3>
-            <p>Vídeos assistidos</p>
           </div>
         </div>
 
@@ -54,26 +50,26 @@ export default function Progressos() {
           <div className="video-card completed">
             <div className="video-thumb">
               <img src="/img/fortnite.jpg" alt="Fortnite" onError={e => e.target.style.display='none'} />
-              <span className="status">Concluído</span>
             </div>
             <h4>Treino de Mira Fortnite</h4>
           </div>
           <div className="video-card completed">
             <div className="video-thumb">
               <img src="/img/rainbow.jpg" alt="Rainbow" onError={e => e.target.style.display='none'} />
-              <span className="status">Concluído</span>
             </div>
             <h4>Controle de Recoil Rainbow Six</h4>
           </div>
           <div className="video-card in-progress">
             <div className="video-thumb">
               <img src="/img/clash.jpg" alt="Clash" onError={e => e.target.style.display='none'} />
-              <span className="status-progress">Em andamento</span>
             </div>
             <h4>Deck competitivo Clash Royale</h4>
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: '45%' }} />
+          </div>
+          <div className="video-card">
+            <div className="video-thumb">
+              <img src="/img/lol.jpg" alt="League of Legends" onError={e => e.target.style.display='none'} />
             </div>
+            <h4>Controle de corredor League of Legends</h4>
           </div>
         </div>
       </section>

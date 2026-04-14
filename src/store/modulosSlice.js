@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-
+//maia
 const API = 'http://localhost:3001'
 
 // Busca os módulos do back-end mockado
