@@ -1,0 +1,93 @@
+.config-container {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.config-container h1 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: var(--primary);
+  transition: color 0.3s ease;
+}
+
+.config-section {
+  background-color: var(--surface2);
+  padding: 2rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.config-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--primary);
+  transition: color 0.3s ease;
+}
+
+.config-section p {
+  margin-bottom: 1.5rem;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.color-button {
+  padding: 1rem;
+  border: 3px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  position: relative;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.color-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.color-button.active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(105, 242, 196, 0.2);
+}
+
+.color-label {
+  background-color: rgba(15, 17, 23, 0.95);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+@media (max-width: 768px) {
+  .config-container {
+    padding: 1rem;
+  }
+
+  .config-section {
+    padding: 1.5rem;
+  }
+
+  .color-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.8rem;
+  }
+
+  .color-button {
+    min-height: 80px;
+  }
+}
