@@ -1,149 +1,171 @@
-import { useEffect, useState } from 'react'
+// ============================================================
+// pages/Perfil.jsx
+// Página de perfil do usuário logado.
+//
+// Dados exibidos:
+//   - Nome e avatar: sempre do usuário autenticado (auth.usuario)
+//   - Bio: estado local do Redux (perfilSlice)
+//   - Ranks: estado local do Redux, editável pelo usuário
+//
+// Por que não usar o json-server para o perfil?
+//   O json-server guarda um único objeto /perfil fixo (mock).
+//   Para exibir o perfil correto de cada usuário logado, usamos
+//   o estado Redux inicializado no momento do login.
+// ============================================================
+
+import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
-// Importamos as actions do perfilSlice: buscar, editar e deletar
-import { fetchPerfil, updatePerfil, deletarPerfil } from '../store/perfilSlice'
-
-// Importamos o logout do authSlice para deslogar após excluir a conta
+import { updatePerfil, deletarPerfil } from '../store/perfilSlice'
 import { fazerLogout } from '../store/authSlice'
 
 import Layout from '../components/Layout'
-import Modal from '../components/Modal'
-import Toast from '../components/Toast'
+import Modal  from '../components/Modal'
+import Toast  from '../components/Toast'
 import './Perfil.css'
 
 export default function Perfil() {
-  // dispatch: função para enviar ações ao Redux
-  const dispatch  = useDispatch()
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
-  // navigate: função para navegar entre telas
-  const navigate  = useNavigate()
-
-  // Lê os dados do perfil e o status de carregamento do Redux (variável local global)
-  const { dados, status } = useSelector(s => s.perfil)
-
-  // Lê o usuário logado do Redux (para montar o avatar, se necessário)
+  // Usuário logado — fonte principal para nome e avatar
   const usuario = useSelector(s => s.auth.usuario)
 
-  // Estado local: controla se o modal de edição está aberto
+  // Dados editáveis do perfil (bio e ranks) — estado local do Redux
+  const dados = useSelector(s => s.perfil.dados)
+
+  // ---------- estados do modal de edição ----------
   const [editando, setEditando] = useState(false)
 
-  // Estados locais: guardam os valores digitados no formulário de edição
-  const [nome, setNome] = useState('')
-  const [bio,  setBio]  = useState('')
+  // Campos do formulário de edição
+  const [nome,  setNome]  = useState('')
+  const [bio,   setBio]   = useState('')
+  // ranks: cópia local do array de ranks para edição no modal
+  const [ranks, setRanks] = useState([])
 
-  // Estado local: controla se o modal de confirmação de exclusão está aberto
+  // ---------- estado do modal de exclusão ----------
   const [confirmandoDelete, setConfirmandoDelete] = useState(false)
 
-  // Estado local: guarda a mensagem do toast (aviso flutuante na tela)
+  // ---------- toast ----------
   const [toast, setToast] = useState(null)
 
-  // useEffect: roda automaticamente quando o componente é exibido na tela
-  // Se o perfil ainda não foi carregado (status 'idle'), faz o fetch no json-server
-  useEffect(() => {
-    if (status === 'idle') dispatch(fetchPerfil())
-  }, [dispatch, status])
-
-  // Função: abre o modal de edição e preenche os campos com os dados atuais
+  // Abre o modal de edição com os dados atuais pré-preenchidos
   function abrirEdicao() {
-    setNome(dados?.nome ?? '')  // ?? significa "se for nulo, usa string vazia"
-    setBio(dados?.bio  ?? '')
+    setNome(usuario?.name ?? '')
+    setBio(dados?.bio ?? '')
+    // Copia o array de ranks para não mutar o estado Redux diretamente
+    setRanks(dados?.ranks?.map(r => ({ ...r })) ?? [])
     setEditando(true)
   }
 
-  // Função: salva as alterações do perfil localmente no Redux (updatePerfil)
+  // Atualiza o rank de um jogo específico enquanto o usuário digita
+  // idx = índice no array, valor = texto digitado
+  function handleRankChange(idx, valor) {
+    setRanks(prev => prev.map((r, i) => i === idx ? { ...r, rank: valor } : r))
+  }
+
+  // Salva as alterações no Redux
   function salvar() {
-    // Envia a action updatePerfil com os novos dados — atualiza a variável local no Redux
-    dispatch(updatePerfil({ nome: nome || 'Jogador', bio }))
+    dispatch(updatePerfil({ bio, ranks }))
     setEditando(false)
     setToast('Perfil atualizado com sucesso!')
   }
 
-  // Função: deleta o perfil e a conta do usuário
+  // Exclui a conta: limpa o perfil, faz logout e redireciona
   function confirmarDelete() {
-    // 1. Apaga os dados do perfil da variável local do Redux
     dispatch(deletarPerfil())
-
-    // 2. Faz logout: remove a sessão do localStorage e limpa o estado de autenticação
     dispatch(fazerLogout())
-
-    // 3. Redireciona o usuário para a tela de login
     navigate('/login')
   }
+
+  // Enquanto o perfil ainda não foi inicializado (ex: usuário acabou de logar)
+  if (!dados) return <Layout><p className="loading-msg">Carregando perfil...</p></Layout>
 
   return (
     <Layout>
       <h1 className="title">Perfil</h1>
 
-      {/* Mostra mensagem de carregamento enquanto busca os dados no json-server */}
-      {status === 'loading' && <p className="loading-msg">Carregando perfil...</p>}
+      <div className="profile-card">
+        <div className="profile-banner" />
 
-      {/* Mostra o card de perfil quando os dados já estão carregados */}
-      {dados && (
-        <div className="profile-card">
-          <div className="profile-banner" />
-          <div className="profile-header">
-            {/* Avatar do usuário — usa a URL salva no perfil ou gera um avatar pelo uid */}
-            <img
-              src={dados.avatarUrl ?? `https://i.pravatar.cc/80?u=${usuario?.uid}`}
-              className="profile-avatar"
-              alt="avatar"
-            />
-            <div className="profile-info">
-              {/* LISTAGEM (Read): exibe os dados do perfil que estão na variável local do Redux */}
-              <h2>{dados.nome}</h2>
-              <p className="profile-bio">{dados.bio}</p>
+        <div className="profile-header">
+          {/* Avatar: gerado pelo uid do usuário logado — único por conta */}
+          <img
+            src={`https://i.pravatar.cc/80?u=${usuario?.uid}`}
+            className="profile-avatar"
+            alt="avatar"
+          />
 
-              {/* Botão para abrir o modal de edição */}
-              <button className="edit-btn" onClick={abrirEdicao}>Editar perfil</button>
+          <div className="profile-info">
+            {/* Nome vem diretamente do usuário autenticado (não de um perfil mockado) */}
+            <h2>{usuario?.name}</h2>
 
-              {/* Botão para abrir a confirmação de exclusão da conta */}
-              <button
-                className="edit-btn"
-                onClick={() => setConfirmandoDelete(true)}
-                style={{ marginTop: '0.5rem', background: '#c0392b', borderColor: '#c0392b' }}
-              >
-                Excluir Conta
-              </button>
-            </div>
-          </div>
+            {/* Bio vem do estado editável do Redux */}
+            <p className="profile-bio">{dados.bio || 'Sem bio ainda.'}</p>
 
-          {/* Stats estáticos do perfil (rankings nos jogos) */}
-          <div className="profile-stats">
-            <div className="profile-stat"><p>Fortnite</p><strong>Surreal</strong></div>
-            <div className="profile-stat"><p>Rainbow Six</p><strong>Diamante</strong></div>
-            <div className="profile-stat"><p>Clash Royale</p><strong>12.700 🏆</strong></div>
+            <button className="edit-btn" onClick={abrirEdicao}>Editar perfil</button>
+
+            <button
+              className="edit-btn"
+              onClick={() => setConfirmandoDelete(true)}
+              style={{ marginTop: '0.5rem', background: '#c0392b', borderColor: '#c0392b' }}
+            >
+              Excluir Conta
+            </button>
           </div>
         </div>
-      )}
 
-      {/* Modal de EDIÇÃO (Update): aparece quando o usuário clica em "Editar perfil" */}
+        {/* Seção de ranks — um bloco por jogo, editável pelo modal de edição */}
+        <div className="profile-stats">
+          {dados.ranks?.map(r => (
+            <div className="profile-stat" key={r.jogo}>
+              <p>{r.jogo}</p>
+              {/* Mostra o rank preenchido ou "—" se ainda não foi informado */}
+              <strong>{r.rank || '—'}</strong>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ---- Modal de edição de perfil ---- */}
       {editando && (
         <Modal onClose={() => setEditando(false)}>
           <h3 style={{ marginBottom: '1.2rem' }}>Editar Perfil</h3>
 
-          {/* Campo para editar o nome */}
-          <div className="compt-modal-field">
-            <label>Nome</label>
-            <input type="text" value={nome} onChange={e => setNome(e.target.value)} maxLength={30} />
-          </div>
-
-          {/* Campo para editar a bio */}
+          {/* Campo: bio */}
           <div className="compt-modal-field">
             <label>Bio</label>
             <textarea rows={3} value={bio} onChange={e => setBio(e.target.value)} />
           </div>
 
+          {/* Campos de rank — um input por jogo */}
+          <div style={{ marginTop: '1rem' }}>
+            <p style={{ fontSize: '.82rem', color: 'var(--text-muted)', marginBottom: '.7rem', fontWeight: 600 }}>
+              Seus ranks
+            </p>
+            {ranks.map((r, idx) => (
+              <div className="compt-modal-field" key={r.jogo}>
+                <label>{r.jogo}</label>
+                <input
+                  type="text"
+                  value={r.rank}
+                  onChange={e => handleRankChange(idx, e.target.value)}
+                  placeholder="Ex: Diamante, Surreal, 12.000 🏆..."
+                  maxLength={30}
+                />
+              </div>
+            ))}
+          </div>
+
           <div className="compt-modal-actions" style={{ marginTop: '1.4rem' }}>
-            {/* Botão salvar: chama a função que envia os dados ao Redux */}
             <button className="btn-primary"   onClick={salvar}>Salvar</button>
             <button className="btn-secondary" onClick={() => setEditando(false)}>Cancelar</button>
           </div>
         </Modal>
       )}
 
-      {/* Modal de CONFIRMAÇÃO DE EXCLUSÃO (Delete): pergunta se o usuário tem certeza */}
+      {/* ---- Modal de confirmação de exclusão de conta ---- */}
       {confirmandoDelete && (
         <Modal onClose={() => setConfirmandoDelete(false)}>
           <h3 style={{ marginBottom: '1rem', color: '#c0392b' }}>Excluir Conta</h3>
@@ -151,7 +173,6 @@ export default function Perfil() {
             Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.
           </p>
           <div className="compt-modal-actions">
-            {/* Botão confirmar: chama a função que apaga o perfil e desloga */}
             <button
               className="btn-primary"
               onClick={confirmarDelete}
@@ -166,7 +187,6 @@ export default function Perfil() {
         </Modal>
       )}
 
-      {/* Toast: mensagem flutuante de sucesso após editar o perfil */}
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
     </Layout>
   )
