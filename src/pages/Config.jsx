@@ -41,6 +41,7 @@ function Config() {
   return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)
 }
   return (
+  <Layout>
     <div className="config-container">
       <h1>Configurações</h1>
       
@@ -64,6 +65,7 @@ function Config() {
         </div>
       </div>
     </div>
+    </Layout>
   );
 }
 
