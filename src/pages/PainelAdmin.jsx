@@ -19,10 +19,12 @@ import './PainelAdmin.css'
 
 export default function PainelAdmin() {
   const dispatch = useDispatch()
+  
   // Usuário logado — usado para verificar permissões
   const usuarioLogado = useSelector(state => state.auth.usuario)
   // Lista de todos os usuários cadastrados
   const usuarios = useSelector(state => state.users.lista)
+
   // Estado local para o filtro de pesquisa
   const [busca, setBusca] = useState('')
 
