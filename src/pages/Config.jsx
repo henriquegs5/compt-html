@@ -39,11 +39,6 @@ function Config() {
   const B = Math.max(0, Math.min(255, (num & 0x0000FF) + amt))
   return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)
 }
-
-return (
-  // ...existing code...
-)
-
   return (
     <div className="config-container">
       <h1>Configurações</h1>
