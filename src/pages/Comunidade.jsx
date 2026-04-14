@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchMensagens, setCanal, addMensagem } from '../store/chatSlice'
+import { fetchMensagens, setCanal, addMensagem, removerMensagem } from '../store/chatSlice'
 import Layout from '../components/Layout'
 import './Comunidade.css'
 
@@ -26,6 +26,9 @@ export default function Comunidade() {
 
   function handleCanal(canal) {
     dispatch(setCanal(canal))
+  }
+  function apagarMensagem(index){
+    dispatch(removerMensagem({canal:canalAtivo,index}))
   }
 
   function enviar() {
@@ -66,6 +69,9 @@ export default function Comunidade() {
               <span className="msg-user">{msg.user}</span>
               <span className="msg-text">{msg.text}</span>
               <span className="msg-time">{msg.time}</span>
+              {isOwn && (<button className="msg-delete-btn" 
+                          onClick={() => apagarMensagem(i)}>🗑️</button>
+              )}
             </div>
           )
         })}

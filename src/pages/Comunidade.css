@@ -74,3 +74,14 @@
   transition: background var(--transition);
 }
 .chat-input button:hover { background: var(--primary-dark); }
+
+.msg-delete-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1rem;
+  opacity: 0.6;
+  transition: opacity var(--transition);
+}
+.msg-delete-btn:hover { opacity: 1; }
