@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fazerLogout } from '../store/authSlice'
 import './Layout.css'
@@ -11,7 +12,15 @@ export default function Layout({ children }) {
   // Verifica se o usuário logado é admin ou moderador
   // para exibir o link do painel de administração no sidebar
   const isAdminOuMod = usuario?.role === 'admin' || usuario?.role === 'moderador'
-
+  
+  // Recupera a cor salva no localStorage ao carregar
+  useEffect(() => {
+    const savedColor = localStorage.getItem('primaryColor')
+    if (savedColor) {
+      document.documentElement.style.setProperty('--primary', savedColor)
+    }
+    
+  }, [])
   function handleLogout() {
     dispatch(fazerLogout())
     navigate('/login')
@@ -53,12 +62,12 @@ export default function Layout({ children }) {
           <NavLink to="/comunidade">Comunidade</NavLink>
           <NavLink to="/estatisticas">Estatísticas</NavLink>
           <NavLink to="/perfil">Perfil</NavLink>
+          <NavLink to="/config">Configurações</NavLink>
           {/* Link do painel admin — visível apenas para admin e moderador */}
           {isAdminOuMod && (
             <NavLink to="/admin">Painel Admin</NavLink>
           )}
           <hr />
-          <a href="#">Configurações</a>
         </nav>
       </aside>
 
