@@ -160,6 +160,27 @@ export const editarCurso = createAsyncThunk(
 )
 
 // ------------------------------------------------------------
+// THUNK 6 — excluirCurso
+// Remove um curso do banco via DELETE no json-server.
+//
+// Disparado pelo botão "Excluir curso" dentro do modal de edição.
+// Só admin e moderador chegam até ele (a verificação está no componente).
+//
+// Importante: esta action NÃO remove os módulos associados.
+// Se quiser limpar também, seria necessário chamar outra rota.
+// Para simplicidade, deixamos só o curso sendo removido.
+// ------------------------------------------------------------
+export const excluirCurso = createAsyncThunk(
+  'cursos/excluirCurso',
+  async (id) => {
+    // DELETE /cursos/:id — json-server remove o item do db.json
+    await fetch(`${API}/cursos/${id}`, { method: 'DELETE' })
+    // Retorna o id para o reducer conseguir filtrar a lista
+    return id
+  }
+)
+
+// ------------------------------------------------------------
 // SLICE — define o estado inicial e os reducers
 // ------------------------------------------------------------
 const cursosSlice = createSlice({
@@ -247,6 +268,14 @@ const cursosSlice = createSlice({
         if (index !== -1) {
           state.items[index] = action.payload
         }
+      })
+
+      // --- Excluir curso ---
+      // Quando o DELETE confirma, remove o curso do array.
+      // action.payload aqui é apenas o id (retornado pela thunk).
+      // filter cria um novo array sem o curso daquele id.
+      .addCase(excluirCurso.fulfilled, (state, action) => {
+        state.items = state.items.filter(c => c.id !== action.payload)
       })
   },
 })
