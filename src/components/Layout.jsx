@@ -58,7 +58,6 @@ export default function Layout({ children }) {
             <NavLink to="/admin">Painel Admin</NavLink>
           )}
           <hr />
-          <a href="#">Suporte</a>
           <a href="#">Configurações</a>
         </nav>
       </aside>

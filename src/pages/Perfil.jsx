@@ -104,15 +104,17 @@ export default function Perfil() {
             {/* Bio vem do estado editável do Redux */}
             <p className="profile-bio">{dados.bio || 'Sem bio ainda.'}</p>
 
-            <button className="edit-btn" onClick={abrirEdicao}>Editar perfil</button>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <button className="edit-btn" onClick={abrirEdicao}>Editar perfil</button>
 
-            <button
-              className="edit-btn"
-              onClick={() => setConfirmandoDelete(true)}
-              style={{ marginTop: '0.5rem', background: '#c0392b', borderColor: '#c0392b' }}
-            >
-              Excluir Conta
-            </button>
+              <button
+                className="edit-btn"
+                onClick={() => setConfirmandoDelete(true)}
+                style={{ background: '#c0392b', borderColor: '#c0392b' }}
+              >
+                Excluir Conta
+              </button>
+            </div>
           </div>
         </div>
 

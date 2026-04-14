@@ -7,16 +7,18 @@ import './Progressos.css'
 export default function Progressos() {
   const dispatch = useDispatch()
   const { items, status } = useSelector(s => s.modulos)
+  // s == state
 
   useEffect(() => { 
     // quando algo mudar no site executa esse codigo
+    //dispatch e a funcao q envia acoes ao redux
     dispatch(fetchModulos())//busca os modulos no slice
   }, [dispatch])
 
   const concluidos  = items.filter(m => m.status === 'completed').length
   const emAndamento = items.filter(m => m.status === 'in-progress').length
   const pct         = items.length ? Math.round((concluidos / items.length) * 100) : 0
-
+  // m == modulos
   return (
     <Layout>
       <h1 className="title">Meus progressos</h1>
