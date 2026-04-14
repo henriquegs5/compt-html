@@ -62,12 +62,12 @@ export default function Layout({ children }) {
           <NavLink to="/comunidade">Comunidade</NavLink>
           <NavLink to="/estatisticas">Estatísticas</NavLink>
           <NavLink to="/perfil">Perfil</NavLink>
-          <NavLink to="/config">Configurações</NavLink>
           {/* Link do painel admin — visível apenas para admin e moderador */}
           {isAdminOuMod && (
             <NavLink to="/admin">Painel Admin</NavLink>
           )}
           <hr />
+          <NavLink to="/config">Configurações</NavLink>
         </nav>
       </aside>
 
