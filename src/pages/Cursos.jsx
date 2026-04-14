@@ -23,7 +23,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
 // Importa os thunks que vão interagir com o json-server
-import { fetchCursos, adicionarCurso, editarCurso } from '../store/cursosSlice'
+import { fetchCursos, adicionarCurso, editarCurso, excluirCurso } from '../store/cursosSlice'
 
 // Layout envolve a página com topbar + sidebar
 import Layout from '../components/Layout'
@@ -161,6 +161,22 @@ export default function Cursos() {
 
     // Fecha o modal após enviar. O ideal seria só fechar APÓS a
     // confirmação da API, mas para simplificar já fechamos aqui.
+    setModalAberto(false)
+  }
+
+  // Exclui o curso que está aberto no modal de edição.
+  // Pede confirmação via window.confirm() para evitar exclusões acidentais
+  // — se o usuário clicar "Cancelar" a função sai sem fazer nada.
+  function handleExcluir() {
+    if (!cursoEditandoId) return // segurança: só exclui em modo edição
+    const confirmar = window.confirm(
+      'Tem certeza que deseja excluir este curso? Esta ação não pode ser desfeita.'
+    )
+    if (!confirmar) return
+
+    // Dispara o DELETE — o reducer remove o curso da grade automaticamente
+    dispatch(excluirCurso(cursoEditandoId))
+    // Fecha o modal já que o curso não existe mais
     setModalAberto(false)
   }
 
@@ -329,6 +345,23 @@ export default function Cursos() {
 
             {/* Linha com os botões no final do formulário */}
             <div className="curso-form-acoes">
+              {/* Botão "Excluir curso" — só aparece no modo EDIÇÃO.
+                  Fica à esquerda para separar visualmente as ações
+                  destrutivas das ações seguras (cancelar/salvar). */}
+              {cursoEditandoId && (
+                <button
+                  type="button"
+                  className="btn-excluir"
+                  onClick={handleExcluir}
+                >
+                  Excluir curso
+                </button>
+              )}
+
+              {/* Spacer empurra os próximos botões para a direita
+                  quando o botão "Excluir" aparece */}
+              <div className="curso-form-spacer" />
+
               {/* type="button" evita que o botão envie o form ao clicar */}
               <button
                 type="button"

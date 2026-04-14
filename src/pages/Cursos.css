@@ -12,6 +12,10 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
+  /* Flex em coluna permite que o rodapé do card fique sempre colado
+     no fundo, independente do tamanho da descrição (ver .curso-footer) */
+  display: flex;
+  flex-direction: column;
   transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
 }
 .curso-card:hover {
@@ -43,6 +47,12 @@
 
 .curso-body {
   padding: 1rem 1.2rem 1.2rem;
+  /* Flex em coluna + flex:1 faz o corpo ocupar todo o espaço restante
+     abaixo da imagem. Isso permite que o .curso-footer use margin-top:auto
+     para grudar no fundo do card. */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .curso-titulo {
@@ -62,6 +72,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* margin-top: auto empurra o rodapé para o fundo do .curso-body,
+     garantindo que "módulos" e "Abrir curso" fiquem sempre alinhados
+     na parte inferior do card, mesmo com descrições de tamanhos diferentes. */
+  margin-top: auto;
 }
 
 .curso-modulos-count {
@@ -256,14 +270,20 @@
   border-color: var(--primary);      /* destaca com a cor primária */
 }
 
-/* Linha dos botões no final do formulário (Cancelar / Salvar) */
+/* Linha dos botões no final do formulário (Excluir / Cancelar / Salvar) */
 .curso-form-acoes {
   display: flex;
-  /* flex-end empurra os botões para o lado direito do modal,
-     padrão de design em formulários (confirmação na direita) */
-  justify-content: flex-end;
-  gap: .7rem;                        /* espaço entre os dois botões */
+  align-items: center;
+  gap: .7rem;                        /* espaço entre os botões */
   margin-top: .5rem;                 /* espaço extra acima dos botões */
+}
+
+/* Spacer invisível que empurra Cancelar/Salvar para a direita.
+   Usando flex: 1 ele ocupa todo o espaço entre o "Excluir" (esquerda)
+   e os outros botões (direita), criando a separação visual entre
+   a ação destrutiva e as ações seguras. */
+.curso-form-spacer {
+  flex: 1;
 }
 
 /* Botão "Cancelar" — visual neutro/secundário.
@@ -302,4 +322,25 @@
 .btn-salvar:hover {
   background: var(--primary-dark);
   transform: translateY(-1px);
+}
+
+/* Botão "Excluir curso" — ação destrutiva (vermelho).
+   Usa a mesma estrutura dos outros botões, mas em tom de erro
+   para sinalizar que é uma ação perigosa/irreversível. */
+.btn-excluir {
+  background: transparent;
+  border: 1px solid rgba(224, 80, 80, .4);
+  color: var(--error);
+  padding: .55rem 1.1rem;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: .9rem;
+  font-weight: 500;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+/* No hover, o vermelho fica mais forte para confirmar a intenção */
+.btn-excluir:hover {
+  background: rgba(224, 80, 80, .15);
+  border-color: var(--error);
+  color: var(--error);
 }
