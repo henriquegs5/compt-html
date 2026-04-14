@@ -87,3 +87,219 @@
   background: var(--primary-dark);
   transform: translateY(-1px);
 }
+
+/* =====================================================
+   Botão "Editar" no card de curso — admin/moderador
+   =====================================================
+   Flutua no canto superior direito da imagem do card.
+   Usa position: absolute, então o .curso-card precisa ser
+   position: relative (definido abaixo) para servir de referência. */
+
+/* Define o card como referência de posicionamento para o botão flutuante.
+   Sem isso, o botão "absolute" se posicionaria em relação ao <body>. */
+.curso-card {
+  position: relative;
+}
+
+.btn-editar-curso {
+  /* Flutua no canto superior direito do card */
+  position: absolute;
+  top: .6rem;
+  right: .6rem;
+  z-index: 2;                  /* fica acima da imagem e do overlay */
+
+  /* Fundo escuro semi-transparente para legibilidade sobre qualquer imagem */
+  background: rgba(15, 17, 23, .75);
+  border: 1px solid var(--border);
+  border-radius: 50%;          /* formato circular */
+
+  /* Tamanho fixo — quadrado perfeito para ficar bem redondo */
+  width: 34px;
+  height: 34px;
+  padding: 0;
+
+  /* Centraliza o emoji dentro do círculo */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .95rem;
+
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition),
+              transform var(--transition);
+}
+
+/* Hover: destaca o botão com a cor primária e aumenta ligeiramente */
+.btn-editar-curso:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  transform: scale(1.1);
+}
+
+/* =====================================================
+   Card "Adicionar curso" — visível para admin/moderador
+   =====================================================
+   Esse card é diferente dos outros: não tem imagem nem descrição,
+   só um "+" grande no centro. Serve como botão para abrir o modal
+   de criação de curso.
+
+   Usa a mesma classe .curso-card (para herdar tamanho/arredondamento)
+   mas com modificador "--adicionar" para trocar o visual. */
+.curso-card--adicionar {
+  /* flex em coluna centraliza o "+" e o texto verticalmente */
+  display: flex;
+  flex-direction: column;
+  align-items: center;      /* centraliza horizontalmente */
+  justify-content: center;  /* centraliza verticalmente */
+  gap: .5rem;               /* espaço entre o "+" e o texto */
+
+  /* min-height garante que o card tenha altura parecida com os outros
+     (cards com imagem + texto ficam em torno de 320px) */
+  min-height: 320px;
+
+  /* Fundo transparente para parecer "vazio", reforçando a ideia
+     de "espaço para adicionar" */
+  background: transparent;
+
+  /* Borda tracejada: visualmente sinaliza que é uma área de ação,
+     não um card normal. Convenção comum em interfaces de "adicionar". */
+  border: 2px dashed var(--border);
+
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;     /* herda a fonte do botão (que é <button>) */
+
+  /* Transição suave em todas as propriedades que mudam no hover */
+  transition: border-color var(--transition), color var(--transition),
+              background var(--transition), transform var(--transition);
+}
+
+/* Estado hover: destaca o card quando o mouse passa por cima */
+.curso-card--adicionar:hover {
+  /* Borda e texto ganham a cor primária (verde-água) */
+  border-color: var(--primary);
+  color: var(--primary);
+  /* Fundo levemente colorido reforça o destaque */
+  background: rgba(105, 242, 196, .05);
+  /* Levanta o card 4px (efeito de "flutuar" no hover) */
+  transform: translateY(-4px);
+  /* Anula o box-shadow herdado do .curso-card:hover para manter o look limpo */
+  box-shadow: none;
+}
+
+/* Ícone "+" grande no centro do card */
+.curso-adicionar-icone {
+  font-size: 3.5rem;        /* bem maior que o texto normal */
+  font-weight: 300;         /* fino, para parecer mais elegante */
+  line-height: 1;           /* remove espaço extra acima/abaixo do caractere */
+}
+
+/* Texto "Adicionar curso" logo abaixo do "+" */
+.curso-adicionar-texto {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* =====================================================
+   Modal de criação de curso — formulário
+   ===================================================== */
+
+/* Título que aparece no topo do modal */
+.modal-titulo {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1.2rem;    /* espaço entre título e formulário */
+  color: var(--text);
+}
+
+/* Container do formulário: empilha os campos verticalmente */
+.curso-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;                /* espaço entre cada label/campo */
+}
+
+/* Cada <label> do formulário segue este padrão:
+   - o texto do label fica em cima (ex: "Título")
+   - o input/textarea fica embaixo
+   O flex-direction: column faz o texto e o campo empilharem verticalmente. */
+.curso-form label {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;               /* pequeno espaço entre texto e campo */
+  font-size: .85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Estilo compartilhado entre inputs de texto/número e textarea.
+   Usar o mesmo seletor composto evita duplicação de código. */
+.curso-form input,
+.curso-form textarea {
+  background: var(--surface2);       /* fundo mais escuro que o modal */
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: .6rem .9rem;              /* espaço interno confortável */
+  font-family: inherit;              /* usa a fonte global do site */
+  font-size: .95rem;
+  transition: border-color var(--transition);
+  /* textarea pode ser redimensionado só na vertical — evita que o
+     usuário "estique" o campo para fora do modal na horizontal */
+  resize: vertical;
+}
+
+/* Estado de foco: quando o usuário clica/tab no campo */
+.curso-form input:focus,
+.curso-form textarea:focus {
+  outline: none;                     /* remove o contorno padrão do navegador */
+  border-color: var(--primary);      /* destaca com a cor primária */
+}
+
+/* Linha dos botões no final do formulário (Cancelar / Salvar) */
+.curso-form-acoes {
+  display: flex;
+  /* flex-end empurra os botões para o lado direito do modal,
+     padrão de design em formulários (confirmação na direita) */
+  justify-content: flex-end;
+  gap: .7rem;                        /* espaço entre os dois botões */
+  margin-top: .5rem;                 /* espaço extra acima dos botões */
+}
+
+/* Botão "Cancelar" — visual neutro/secundário.
+   Fundo transparente e borda indica que é uma ação menos importante. */
+.btn-cancelar {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: .55rem 1.1rem;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: .9rem;
+  transition: border-color var(--transition), color var(--transition);
+}
+/* No hover, clareia levemente para dar feedback visual */
+.btn-cancelar:hover {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+/* Botão "Salvar curso" — visual primário (ação principal).
+   Fundo sólido com a cor da marca para destacar. */
+.btn-salvar {
+  background: var(--primary);
+  /* Texto escuro em fundo claro para garantir contraste/legibilidade */
+  color: #0f1117;
+  border: none;
+  padding: .55rem 1.2rem;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: .9rem;
+  font-weight: 600;                  /* negrito leve para reforçar hierarquia */
+  transition: background var(--transition), transform var(--transition);
+}
+/* No hover, escurece um pouco a cor e levanta o botão (efeito "pressionável") */
+.btn-salvar:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
