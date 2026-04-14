@@ -181,6 +181,76 @@ export const excluirCurso = createAsyncThunk(
 )
 
 // ------------------------------------------------------------
+// THUNK 7 — adicionarModulo
+// Cria um novo módulo dentro de um curso específico (POST /modulos).
+//
+// Usado pelo botão "+" na grade de módulos da página ModulosCurso.
+// O admin/moderador preenche título, descrição e imagem — o cursoId
+// vem da URL da página e o status começa como "locked" (não iniciado).
+// ------------------------------------------------------------
+export const adicionarModulo = createAsyncThunk(
+  'cursos/adicionarModulo',
+  async ({ cursoId, titulo, descricao, imagem, link }) => {
+    const novoModulo = {
+      id: String(Date.now()),              // id único baseado no timestamp
+      cursoId,                              // vincula o módulo ao curso atual
+      titulo,
+      descricao,
+      imagem: imagem || 'default.jpg',
+      // Campo opcional: URL de referência (ex: vídeo, material, etc.)
+      // Se não for informado, fica string vazia — a interface esconde o
+      // link quando está vazio.
+      link: link || '',
+      status: 'locked',                     // todo módulo novo começa bloqueado
+    }
+    const res = await fetch(`${API}/modulos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(novoModulo),
+    })
+    return await res.json()
+  }
+)
+
+// ------------------------------------------------------------
+// THUNK 8 — editarModulo
+// Atualiza título, descrição e imagem de um módulo existente.
+// Usa PATCH para não sobrescrever campos que não queremos mudar
+// (como cursoId e status).
+// ------------------------------------------------------------
+export const editarModulo = createAsyncThunk(
+  'cursos/editarModulo',
+  async ({ id, titulo, descricao, imagem, link }) => {
+    const dadosAtualizados = {
+      titulo,
+      descricao,
+      imagem: imagem || 'default.jpg',
+      // URL opcional de referência do módulo (vídeo, material, etc.)
+      link: link || '',
+    }
+    const res = await fetch(`${API}/modulos/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dadosAtualizados),
+    })
+    return await res.json()
+  }
+)
+
+// ------------------------------------------------------------
+// THUNK 9 — excluirModulo
+// Remove um módulo do banco (DELETE /modulos/:id).
+// Disparado pelo botão "Excluir" dentro do modal de edição.
+// ------------------------------------------------------------
+export const excluirModulo = createAsyncThunk(
+  'cursos/excluirModulo',
+  async (id) => {
+    await fetch(`${API}/modulos/${id}`, { method: 'DELETE' })
+    return id  // devolve o id para o reducer saber qual módulo remover
+  }
+)
+
+// ------------------------------------------------------------
 // SLICE — define o estado inicial e os reducers
 // ------------------------------------------------------------
 const cursosSlice = createSlice({
@@ -276,6 +346,27 @@ const cursosSlice = createSlice({
       // filter cria um novo array sem o curso daquele id.
       .addCase(excluirCurso.fulfilled, (state, action) => {
         state.items = state.items.filter(c => c.id !== action.payload)
+      })
+
+      // --- Adicionar módulo ---
+      // Adiciona o módulo criado ao array de módulos do curso aberto.
+      .addCase(adicionarModulo.fulfilled, (state, action) => {
+        state.modulosDosCurso.push(action.payload)
+      })
+
+      // --- Editar módulo ---
+      // Substitui o módulo na posição correta do array (pelo id).
+      .addCase(editarModulo.fulfilled, (state, action) => {
+        const index = state.modulosDosCurso.findIndex(m => m.id === action.payload.id)
+        if (index !== -1) {
+          state.modulosDosCurso[index] = action.payload
+        }
+      })
+
+      // --- Excluir módulo ---
+      // Remove o módulo do array filtrando pelo id.
+      .addCase(excluirModulo.fulfilled, (state, action) => {
+        state.modulosDosCurso = state.modulosDosCurso.filter(m => m.id !== action.payload)
       })
   },
 })
