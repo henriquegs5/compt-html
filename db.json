@@ -36,7 +36,7 @@
       "titulo": "Módulo 1 - Mentalidade Competitiva",
       "descricao": "Como pensar como um jogador de alto nível.",
       "imagem": "fortnite.jpg",
-      "status": "completed"
+      "status": "in-progress"
     },
     {
       "id": "2",
@@ -44,7 +44,7 @@
       "titulo": "Módulo 2 - Tomada de Decisão",
       "descricao": "Tomada de decisão rápida em momentos críticos da partida.",
       "imagem": "fortnite.jpg",
-      "status": "completed"
+      "status": "in-progress"
     },
     {
       "id": "3",
