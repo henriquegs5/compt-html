@@ -21,6 +21,8 @@ import {
   adicionarModulo,
   editarModulo,
   excluirModulo,
+  selectAllCursos,
+  selectAllModulosDoCurso,
 } from '../store/cursosSlice'
 import Layout from '../components/Layout'
 import Modal  from '../components/Modal'
@@ -34,11 +36,11 @@ export default function ModulosCurso() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  // Lê do estado global do Redux:
-  //   cursos          → lista de cursos (para mostrar nome/descrição do curso atual)
-  //   modulosDosCurso → módulos filtrados do curso aberto
-  //   modulosStatus   → status da requisição dos módulos
-  const { items: cursos, modulosDosCurso, modulosStatus } = useSelector(s => s.cursos)
+  // selectAllCursos e selectAllModulosDoCurso são gerados pelo EntityAdapter
+  // e convertem o estado normalizado { ids, entities } em um array simples
+  const cursos        = useSelector(selectAllCursos)
+  const modulosDosCurso = useSelector(selectAllModulosDoCurso)
+  const modulosStatus = useSelector(s => s.cursos.modulosDosCurso.status)
 
   // Usuário logado — usado para controle de permissão (admin/moderador)
   const usuario = useSelector(s => s.auth.usuario)

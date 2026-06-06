@@ -96,3 +96,11 @@
 }
 .auth-link a { color: var(--primary); font-weight: 500; }
 .auth-link a:hover { text-decoration: underline; }
+
+/* Erro inline por campo — exibido pelo Yup abaixo do input correspondente */
+.campo-erro {
+  display: block;
+  color: var(--error);
+  font-size: .8rem;
+  margin-top: .25rem;
+}

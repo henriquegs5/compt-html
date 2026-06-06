@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { fetchCursos, adicionarCurso, editarCurso, excluirCurso } from '../store/cursosSlice'
+import {
+  fetchCursos,
+  adicionarCurso,
+  editarCurso,
+  excluirCurso,
+  selectAllCursos,
+} from '../store/cursosSlice'
 import Layout from '../components/Layout'
 import Modal from '../components/Modal'
 import './Cursos.css'
@@ -9,7 +15,10 @@ import './Cursos.css'
 export default function Cursos() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { items, status } = useSelector(s => s.cursos)
+  // selectAllCursos é gerado pelo EntityAdapter e retorna o array de cursos
+  // a partir do estado normalizado { ids: [], entities: {} }
+  const items  = useSelector(selectAllCursos)
+  const status = useSelector(s => s.cursos.status)
   const usuario = useSelector(s => s.auth.usuario)
 
   const podeAdicionar = usuario?.role === 'admin' || usuario?.role === 'moderador'

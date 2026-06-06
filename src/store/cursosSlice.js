@@ -1,8 +1,18 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit'
 
 // Endereço base do servidor de dados (json-server rodando na porta 3001)
 const API = 'http://localhost:3001'
 
+// ============================================================
+// EntityAdapters
+// createEntityAdapter normaliza o estado em { ids: [], entities: {} }
+// e fornece métodos prontos (setAll, addOne, updateOne, removeOne...)
+// além de selectors pré-construídos (selectAll, selectById, etc.)
+// ============================================================
+const cursosAdapter  = createEntityAdapter()
+const modulosAdapter = createEntityAdapter()
+
+// ---- Thunks ----
 
 export const fetchCursos = createAsyncThunk('cursos/fetchCursos', async () => {
   const res = await fetch(`${API}/cursos`)
@@ -65,7 +75,6 @@ export const editarCurso = createAsyncThunk(
       totalModulos: Number(totalModulos) || 0,
     }
 
-    
     const res = await fetch(`${API}/cursos/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -131,26 +140,33 @@ export const excluirModulo = createAsyncThunk(
   }
 )
 
+// ============================================================
+// Slice
+// initialState usa getInitialState() do adapter, que cria:
+//   { ids: [], entities: {} }
+// Campos extras (status, erro, modulosDosCurso) são passados como argumento.
+// modulosDosCurso também é normalizado pelo modulosAdapter.
+// ============================================================
 const cursosSlice = createSlice({
   name: 'cursos',
 
-  initialState: {
-    items: [],           // lista de cursos vinda da API
+  initialState: cursosAdapter.getInitialState({
     status: 'idle',      // status da requisição de cursos: idle | loading | succeeded | failed
-
-    modulosDosCurso: [], // módulos do curso atualmente aberto
-    modulosStatus: 'idle', // status da requisição de módulos
-
     erro: null,          // guarda mensagem de erro se algo falhar
-  },
+
+    // Sub-estado dos módulos do curso atualmente aberto (também normalizado)
+    modulosDosCurso: modulosAdapter.getInitialState({
+      status: 'idle',    // status da requisição de módulos
+    }),
+  }),
 
   reducers: {
     // Limpa os módulos do curso anterior antes de carregar o novo.
     // Sem isso, ao trocar de curso o usuário veria os módulos antigos
     // piscando na tela enquanto os novos chegam.
     limparModulosCurso(state) {
-      state.modulosDosCurso = []
-      state.modulosStatus   = 'idle'
+      modulosAdapter.removeAll(state.modulosDosCurso)
+      state.modulosDosCurso.status = 'idle'
     },
   },
 
@@ -160,7 +176,8 @@ const cursosSlice = createSlice({
       .addCase(fetchCursos.pending,   (state) => { state.status = 'loading' })
       .addCase(fetchCursos.fulfilled, (state, action) => {
         state.status = 'succeeded'
-        state.items  = action.payload  // salva os cursos no estado
+        // setAll substitui toda a coleção normalizada de uma vez
+        cursosAdapter.setAll(state, action.payload)
       })
       .addCase(fetchCursos.rejected,  (state, action) => {
         state.status = 'failed'
@@ -168,67 +185,83 @@ const cursosSlice = createSlice({
       })
 
       // --- Módulos do curso ---
-      .addCase(fetchModulosDoCurso.pending,   (state) => { state.modulosStatus = 'loading' })
+      .addCase(fetchModulosDoCurso.pending,   (state) => {
+        state.modulosDosCurso.status = 'loading'
+      })
       .addCase(fetchModulosDoCurso.fulfilled, (state, action) => {
-        state.modulosStatus    = 'succeeded'
-        state.modulosDosCurso  = action.payload  // salva os módulos filtrados
+        state.modulosDosCurso.status = 'succeeded'
+        // setAll popula o sub-estado normalizado com os módulos filtrados
+        modulosAdapter.setAll(state.modulosDosCurso, action.payload)
       })
       .addCase(fetchModulosDoCurso.rejected,  (state, action) => {
-        state.modulosStatus = 'failed'
-        state.erro          = action.error.message
+        state.modulosDosCurso.status = 'failed'
+        state.erro = action.error.message
       })
 
       // --- Atualizar status do módulo ---
       // Quando o PATCH confirma, atualiza o estado local sem precisar
-      // fazer uma nova requisição GET (otimistic update local)
+      // fazer uma nova requisição GET (optimistic update local)
       .addCase(setModuloStatusCurso.fulfilled, (state, action) => {
         const { id, status } = action.payload
-        const modulo = state.modulosDosCurso.find(m => m.id === id)
-        if (modulo) modulo.status = status
+        // updateOne recebe { id, changes } — só muda os campos indicados
+        modulosAdapter.updateOne(state.modulosDosCurso, { id, changes: { status } })
       })
 
+      // --- Adicionar curso ---
       .addCase(adicionarCurso.fulfilled, (state, action) => {
-        state.items.push(action.payload)
+        cursosAdapter.addOne(state, action.payload)
       })
 
-     
+      // --- Editar curso ---
       .addCase(editarCurso.fulfilled, (state, action) => {
-        const index = state.items.findIndex(c => c.id === action.payload.id)
-        if (index !== -1) {
-          state.items[index] = action.payload
-        }
+        const { id, ...changes } = action.payload
+        cursosAdapter.updateOne(state, { id, changes })
       })
 
       // --- Excluir curso ---
-      // Quando o DELETE confirma, remove o curso do array.
-      // action.payload aqui é apenas o id (retornado pela thunk).
-      // filter cria um novo array sem o curso daquele id.
+      // removeOne recebe apenas o id — remove do ids[] e do entities{}
       .addCase(excluirCurso.fulfilled, (state, action) => {
-        state.items = state.items.filter(c => c.id !== action.payload)
+        cursosAdapter.removeOne(state, action.payload)
       })
 
       // --- Adicionar módulo ---
-      // Adiciona o módulo criado ao array de módulos do curso aberto.
       .addCase(adicionarModulo.fulfilled, (state, action) => {
-        state.modulosDosCurso.push(action.payload)
+        modulosAdapter.addOne(state.modulosDosCurso, action.payload)
       })
 
       // --- Editar módulo ---
-      // Substitui o módulo na posição correta do array (pelo id).
       .addCase(editarModulo.fulfilled, (state, action) => {
-        const index = state.modulosDosCurso.findIndex(m => m.id === action.payload.id)
-        if (index !== -1) {
-          state.modulosDosCurso[index] = action.payload
-        }
+        const { id, ...changes } = action.payload
+        modulosAdapter.updateOne(state.modulosDosCurso, { id, changes })
       })
 
       // --- Excluir módulo ---
-      // Remove o módulo do array filtrando pelo id.
       .addCase(excluirModulo.fulfilled, (state, action) => {
-        state.modulosDosCurso = state.modulosDosCurso.filter(m => m.id !== action.payload)
+        modulosAdapter.removeOne(state.modulosDosCurso, action.payload)
       })
   },
 })
 
 export const { limparModulosCurso } = cursosSlice.actions
 export default cursosSlice.reducer
+
+// ============================================================
+// Selectors gerados pelo EntityAdapter
+// Os selectors recebem o estado RAIZ (rootState) e encontram
+// sozinhos o sub-estado correto pelo path fornecido.
+// ============================================================
+
+// Selectors de cursos
+export const {
+  selectAll:   selectAllCursos,    // retorna array com todos os cursos
+  selectById:  selectCursoById,    // retorna um curso pelo id
+  selectIds:   selectCursosIds,    // retorna só o array de ids
+  selectTotal: selectTotalCursos,  // retorna a quantidade de cursos
+} = cursosAdapter.getSelectors((state) => state.cursos)
+
+// Selectors de módulos do curso aberto
+export const {
+  selectAll:   selectAllModulosDoCurso,   // retorna array com todos os módulos do curso aberto
+  selectById:  selectModuloDoCursoById,   // retorna um módulo pelo id
+  selectTotal: selectTotalModulosDoCurso, // retorna a quantidade de módulos
+} = modulosAdapter.getSelectors((state) => state.cursos.modulosDosCurso)
