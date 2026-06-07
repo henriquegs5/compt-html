@@ -14,16 +14,37 @@ const modulosAdapter = createEntityAdapter()
 
 // ---- Thunks ----
 
-export const fetchCursos = createAsyncThunk('cursos/fetchCursos', async () => {
+/**
+ * Busca todos os cursos do servidor.
+ * @async
+ * @function fetchCursos
+ * @returns {Promise<Array>} Array com todos os cursos cadastrados
+ */
+export const fetchCursos = createAsyncThunk('cursos/fetchCursos', async (_, { rejectWithValue }) => {
   const res = await fetch(`${API}/cursos`)
-  return await res.json()  // retorna o array de cursos para o fulfilled
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Erro ao carregar cursos' }))
+    return rejectWithValue(err.error || 'Erro ao carregar cursos')
+  }
+  return await res.json()
 })
 
 
+/**
+ * Busca os módulos pertencentes a um curso específico.
+ * @async
+ * @function fetchModulosDoCurso
+ * @param {string} cursoId - O ID do curso para o qual os módulos serão buscados
+ * @returns {Promise<Array>} Array de módulos filtrados
+ */
 export const fetchModulosDoCurso = createAsyncThunk(
   'cursos/fetchModulosDoCurso',
   async (cursoId) => {
-    const res    = await fetch(`${API}/modulos`)  // busca todos os módulos
+    const sessao = JSON.parse(localStorage.getItem('compt_session'));
+    const token = sessao ? sessao.token : '';
+    const res    = await fetch(`${API}/modulos`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })  // busca todos os módulos
     const todos  = await res.json()
     // filtra apenas os módulos que pertencem ao curso clicado
     return todos.filter(m => m.cursoId === cursoId)
@@ -31,12 +52,26 @@ export const fetchModulosDoCurso = createAsyncThunk(
 )
 
 
+/**
+ * Atualiza o status de um módulo (ex: locked, in-progress, completed).
+ * @async
+ * @function setModuloStatusCurso
+ * @param {Object} payload - Objeto com id do módulo e o novo status
+ * @param {string} payload.id - ID do módulo
+ * @param {string} payload.status - Novo status
+ * @returns {Promise<Object>} Retorna o id e o status atualizado
+ */
 export const setModuloStatusCurso = createAsyncThunk(
   'cursos/setModuloStatusCurso',
   async ({ id, status }) => {
+    const sessao = JSON.parse(localStorage.getItem('compt_session'));
+    const token = sessao ? sessao.token : '';
     await fetch(`${API}/modulos/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({ status }),  // manda só o campo que mudou
     })
     return { id, status }  // devolve o id e novo status para atualizar o estado local
@@ -44,20 +79,36 @@ export const setModuloStatusCurso = createAsyncThunk(
 )
 
 
+/**
+ * Adiciona um novo curso ao banco de dados.
+ * @async
+ * @function adicionarCurso
+ * @param {Object} cursoData - Dados do novo curso
+ * @param {string} cursoData.titulo - Título do curso
+ * @param {string} cursoData.descricao - Descrição do curso
+ * @param {string} cursoData.imagem - Imagem de capa do curso
+ * @returns {Promise<Object>} O curso recém-criado retornado pelo servidor
+ */
 export const adicionarCurso = createAsyncThunk(
   'cursos/adicionarCurso',
-  async ({ titulo, descricao, imagem, totalModulos }) => {
+  async ({ titulo, descricao, imagem }) => {
+    // Monta o objeto inicial a ser enviado para a API
     const novoCurso = {
       id: String(Date.now()),
       titulo,
       descricao,
       imagem: imagem || 'default.jpg',
-      totalModulos: Number(totalModulos) || 0,
     }
+
+    const sessao = JSON.parse(localStorage.getItem('compt_session'));
+    const token = sessao ? sessao.token : '';
 
     const res = await fetch(`${API}/cursos`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify(novoCurso),
     })
 
@@ -65,19 +116,36 @@ export const adicionarCurso = createAsyncThunk(
   }
 )
 
+/**
+ * Edita as informações de um curso existente.
+ * @async
+ * @function editarCurso
+ * @param {Object} cursoData - Dados atualizados do curso
+ * @param {string} cursoData.id - ID do curso a ser editado
+ * @param {string} cursoData.titulo - Título do curso
+ * @param {string} cursoData.descricao - Descrição do curso
+ * @param {string} cursoData.imagem - Imagem de capa
+ * @param {number|string} cursoData.totalModulos - Total de módulos
+ * @returns {Promise<Object>} O curso editado retornado pelo servidor
+ */
 export const editarCurso = createAsyncThunk(
   'cursos/editarCurso',
-  async ({ id, titulo, descricao, imagem, totalModulos }) => {
+  async ({ id, titulo, descricao, imagem }) => {
     const dadosAtualizados = {
       titulo,
       descricao,
       imagem: imagem || 'default.jpg',
-      totalModulos: Number(totalModulos) || 0,
     }
+
+    const sessao = JSON.parse(localStorage.getItem('compt_session'));
+    const token = sessao ? sessao.token : '';
 
     const res = await fetch(`${API}/cursos/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify(dadosAtualizados),
     })
 
@@ -85,10 +153,22 @@ export const editarCurso = createAsyncThunk(
   }
 )
 
+/**
+ * Exclui um curso do banco de dados pelo seu ID.
+ * @async
+ * @function excluirCurso
+ * @param {string} id - ID do curso a ser removido
+ * @returns {Promise<string>} O ID do curso removido
+ */
 export const excluirCurso = createAsyncThunk(
   'cursos/excluirCurso',
   async (id) => {
-    await fetch(`${API}/cursos/${id}`, { method: 'DELETE' })
+    const sessao = JSON.parse(localStorage.getItem('compt_session'));
+    const token = sessao ? sessao.token : '';
+    await fetch(`${API}/cursos/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
     return id
   }
 )
@@ -105,9 +185,14 @@ export const adicionarModulo = createAsyncThunk(
       link: link || '',
       status: 'locked',                    // todo módulo novo começa bloqueado
     }
+    const sessao = JSON.parse(localStorage.getItem('compt_session'));
+    const token = sessao ? sessao.token : '';
     const res = await fetch(`${API}/modulos`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify(novoModulo),
     })
     return await res.json()
@@ -123,9 +208,14 @@ export const editarModulo = createAsyncThunk(
       imagem: imagem || 'default.jpg',
       link: link || '',
     }
+    const sessao = JSON.parse(localStorage.getItem('compt_session'));
+    const token = sessao ? sessao.token : '';
     const res = await fetch(`${API}/modulos/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify(dadosAtualizados),
     })
     return await res.json()
@@ -135,7 +225,12 @@ export const editarModulo = createAsyncThunk(
 export const excluirModulo = createAsyncThunk(
   'cursos/excluirModulo',
   async (id) => {
-    await fetch(`${API}/modulos/${id}`, { method: 'DELETE' })
+    const sessao = JSON.parse(localStorage.getItem('compt_session'));
+    const token = sessao ? sessao.token : '';
+    await fetch(`${API}/modulos/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
     return id  // devolve o id para o reducer saber qual módulo remover
   }
 )
@@ -181,7 +276,7 @@ const cursosSlice = createSlice({
       })
       .addCase(fetchCursos.rejected,  (state, action) => {
         state.status = 'failed'
-        state.erro   = action.error.message
+        state.erro   = action.payload ?? action.error.message
       })
 
       // --- Módulos do curso ---

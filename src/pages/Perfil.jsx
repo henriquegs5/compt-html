@@ -13,11 +13,11 @@
 //   o estado Redux inicializado no momento do login.
 // ============================================================
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
-import { updatePerfil, deletarPerfil } from '../store/perfilSlice'
+import { atualizarPerfilBackend, deletarPerfil, fetchPerfil } from '../store/perfilSlice'
 import { fazerLogout } from '../store/authSlice'
 
 import Layout from '../components/Layout'
@@ -34,6 +34,14 @@ export default function Perfil() {
 
   // Dados editáveis do perfil (bio e ranks) — estado local do Redux
   const dados = useSelector(s => s.perfil.dados)
+  const statusPerfil = useSelector(s => s.perfil.status)
+
+  // Ao montar a tela de perfil, se houver usuário mas os dados estiverem vazios (F5), baixa do backend
+  useEffect(() => {
+    if (usuario && (!dados || statusPerfil === 'idle')) {
+      dispatch(fetchPerfil())
+    }
+  }, [usuario, dados, statusPerfil, dispatch])
 
   // ---------- estados do modal de edição ----------
   const [editando, setEditando] = useState(false)
@@ -67,7 +75,7 @@ export default function Perfil() {
 
   // Salva as alterações no Redux
   function salvar() {
-    dispatch(updatePerfil({ bio, ranks }))
+    dispatch(atualizarPerfilBackend({ bio, ranks }))
     setEditando(false)
     setToast('Perfil atualizado com sucesso!')
   }

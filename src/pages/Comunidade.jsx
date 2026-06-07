@@ -1,25 +1,27 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchMensagens, setCanal, addMensagem, removerMensagem } from '../store/chatSlice'
+import { fetchMensagens, setCanal, postMensagem } from '../store/chatSlice'
 import Layout from '../components/Layout'
 import './Comunidade.css'
 //maia
 const CANAIS = ['geral', 'fortnite', 'rainbow', 'clash']
 const LABEL  = { geral: 'GERAL', fortnite: 'FORTNITE', rainbow: 'RAINBOW SIX', clash: 'CLASH ROYALE' }
 
-function getTime() {
-  const d = new Date()
+function formatTime(dateString) {
+  if (!dateString) return ''
+  const d = new Date(dateString)
   return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
 }
 
 export default function Comunidade() {
   const dispatch   = useDispatch()
-  const { mensagens, canalAtivo, status } = useSelector(s => s.chat)
+  const { mensagens, canalAtivo, status, page, hasMore } = useSelector(s => s.chat)
   const usuario    = useSelector(s => s.auth.usuario)
   const [texto, setTexto] = useState('')
 
   useEffect(() => {
-    dispatch(fetchMensagens(canalAtivo))
+    // Busca página 1 ao entrar no canal
+    dispatch(fetchMensagens({ canal: canalAtivo, page: 1 }))
   }, [dispatch, canalAtivo])
 
   const msgs = mensagens[canalAtivo] || []
@@ -27,17 +29,20 @@ export default function Comunidade() {
   function handleCanal(canal) {
     dispatch(setCanal(canal))
   }
-  function apagarMensagem(index){
-    dispatch(removerMensagem({canal:canalAtivo,index}))
+
+  function handleScroll(e) {
+    // Se o scroll chegou no topo, busca mensagens mais antigas (próxima página)
+    if (e.target.scrollTop === 0 && hasMore[canalAtivo] && status !== 'loading') {
+      const nextPage = page[canalAtivo] + 1
+      dispatch(fetchMensagens({ canal: canalAtivo, page: nextPage }))
+    }
   }
 
   function enviar() {
     const text = texto.trim()
     if (!text) return
-    dispatch(addMensagem({
-      canal: canalAtivo,
-      mensagem: { user: usuario?.name ?? 'Você', text, time: getTime() }
-    }))
+    // Usa a API real para enviar e salvar a mensagem no MongoDB
+    dispatch(postMensagem({ canal: canalAtivo, text }))
     setTexto('')
   }
 
@@ -57,21 +62,18 @@ export default function Comunidade() {
         ))}
       </div>
 
-      <div className="chat-box" id="chatBox">
-        {status === 'loading' && <p className="chat-empty">Carregando mensagens...</p>}
+      <div className="chat-box" id="chatBox" onScroll={handleScroll}>
+        {status === 'loading' && <p className="chat-empty">Carregando mensagens antigas...</p>}
         {status !== 'loading' && msgs.length === 0 && (
           <p className="chat-empty">Nenhuma mensagem ainda. Seja o primeiro!</p>
         )}
         {msgs.map((msg, i) => {
-          const isOwn = msg.user === usuario?.name
+          const isOwn = msg.authorName === usuario?.name
           return (
-            <div key={i} className={`message${isOwn ? ' message--own' : ''}`}>
-              <span className="msg-user">{msg.user}</span>
+            <div key={msg.id || i} className={`message${isOwn ? ' message--own' : ''}`}>
+              <span className="msg-user">{msg.authorName}</span>
               <span className="msg-text">{msg.text}</span>
-              <span className="msg-time">{msg.time}</span>
-              {isOwn && (<button className="msg-delete-btn" 
-                          onClick={() => apagarMensagem(i)}>🗑️</button>
-              )}
+              <span className="msg-time">{formatTime(msg.createdAt)}</span>
             </div>
           )
         })}

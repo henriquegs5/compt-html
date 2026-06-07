@@ -12,6 +12,14 @@ import Layout from '../components/Layout'
 import Modal from '../components/Modal'
 import './Cursos.css'
 
+/**
+ * Componente de listagem e gerenciamento de Cursos.
+ * Permite buscar cursos do servidor, filtrar localmente,
+ * criar, editar e excluir (se o usuário for admin).
+ * 
+ * @component
+ * @returns {JSX.Element} Tela de cursos
+ */
 export default function Cursos() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -25,39 +33,62 @@ export default function Cursos() {
 
   const [modalAberto, setModalAberto] = useState(false)
   const [cursoEditandoId, setCursoEditandoId] = useState(null)
+  const [termoPesquisa, setTermoPesquisa] = useState('')
   const [novoCurso, setNovoCurso] = useState({
     titulo: '',
     descricao: '',
     imagem: '',
-    totalModulos: 0,
   })
 
   useEffect(() => {
     if (status === 'idle') dispatch(fetchCursos())
   }, [dispatch, status])
 
+  const cursosFiltrados = items.filter(curso =>
+    curso.titulo.toLowerCase().includes(termoPesquisa.toLowerCase()) ||
+    curso.descricao.toLowerCase().includes(termoPesquisa.toLowerCase())
+  )
+
+  /**
+   * Abre o modal limpo para a criação de um novo curso.
+   * @function abrirModal
+   */
   function abrirModal() {
-    setNovoCurso({ titulo: '', descricao: '', imagem: '', totalModulos: 0 })
+    setNovoCurso({ titulo: '', descricao: '', imagem: '' })
     setCursoEditandoId(null)
     setModalAberto(true)
   }
 
+  /**
+   * Abre o modal preenchido com os dados do curso selecionado para edição.
+   * @function abrirModalEdicao
+   * @param {Object} curso - O objeto de curso a ser editado
+   */
   function abrirModalEdicao(curso) {
     setNovoCurso({
       titulo: curso.titulo,
       descricao: curso.descricao,
-      imagem: curso.imagem,
-      totalModulos: curso.totalModulos,
+      imagem: curso.imagem || '',
     })
     setCursoEditandoId(curso.id)
     setModalAberto(true)
   }
 
+  /**
+   * Lida com a mudança dos inputs no formulário.
+   * @function handleChange
+   * @param {React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement>} e - O evento de mudança
+   */
   function handleChange(e) {
     const { name, value } = e.target
     setNovoCurso(prev => ({ ...prev, [name]: value }))
   }
 
+  /**
+   * Envia o formulário para criar ou editar o curso.
+   * @function handleSubmit
+   * @param {React.FormEvent} e - O evento de submissão do formulário
+   */
   function handleSubmit(e) {
     e.preventDefault()
 
@@ -75,6 +106,10 @@ export default function Cursos() {
     setModalAberto(false)
   }
 
+  /**
+   * Confirma e despacha a ação para excluir um curso existente.
+   * @function handleExcluir
+   */
   function handleExcluir() {
     if (!cursoEditandoId) return
     const confirmar = window.confirm(
@@ -90,12 +125,21 @@ export default function Cursos() {
     <Layout>
       <h1 className="title">Cursos Disponíveis</h1>
       <p className="subtitle">Escolha um curso para ver os módulos</p>
-      <input type="text" className="page-search" placeholder="Pesquisar curso..." />
+      <input
+        type="text"
+        className="page-search"
+        placeholder="Pesquisar curso..."
+        value={termoPesquisa}
+        onChange={e => setTermoPesquisa(e.target.value)}
+      />
 
       {status === 'loading' && <p className="loading-msg">Carregando cursos...</p>}
 
       <div className="cursos-grid">
-        {items.map(curso => (
+        {cursosFiltrados.length === 0 && termoPesquisa && (
+          <p className="loading-msg">Nenhum curso encontrado para "{termoPesquisa}".</p>
+        )}
+        {cursosFiltrados.map(curso => (
           <div className="curso-card" key={curso.id}>
             <div className="curso-image">
               <img
@@ -127,7 +171,14 @@ export default function Cursos() {
 
                 <button
                   className="btn-abrir-curso"
-                  onClick={() => navigate(`/cursos/${curso.id}`)}
+                  onClick={() => {
+                    if (!usuario) {
+                      alert('Você precisa fazer login para acessar este curso.')
+                      navigate('/login')
+                    } else {
+                      navigate(`/cursos/${curso.id}`)
+                    }
+                  }}
                 >
                   Abrir curso
                 </button>
@@ -188,17 +239,6 @@ export default function Cursos() {
                 value={novoCurso.imagem}
                 onChange={handleChange}
                 placeholder="Ex: valorant.jpg"
-              />
-            </label>
-
-            <label>
-              Total de módulos
-              <input
-                type="number"
-                name="totalModulos"
-                value={novoCurso.totalModulos}
-                onChange={handleChange}
-                min="0"
               />
             </label>
 

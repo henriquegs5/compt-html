@@ -27,6 +27,13 @@
       "descricao": "Controle de elixir, decks e estratégia competitiva no card game.",
       "imagem": "clash.jpg",
       "totalModulos": 3
+    },
+    {
+      "id": "8SmWPvR61Ng",
+      "titulo": "Valorant",
+      "descricao": "osos",
+      "imagem": "default.jpg",
+      "totalModulos": 3
     }
   ],
   "modulos": [
