@@ -69,6 +69,8 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+const requireAdminOrMod = (req, res, next) => {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'moderador')) {
     return next();
   }
   res.status(403).json({ error: 'Acesso negado: requer admin ou moderador.' });
