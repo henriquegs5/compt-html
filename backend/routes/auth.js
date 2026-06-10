@@ -69,33 +69,6 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-// GET /auth/me - Retorna os dados do usuário autenticado (Perfil)
-router.get('/me', passport.authenticate('jwt', { session: false }), (req, res) => {
-  res.json(req.user);
-});
-
-// PATCH /auth/me - Atualiza o perfil do usuário logado
-router.patch('/me', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  try {
-    const { name, bio, ranks } = req.body;
-    // Permite que o usuário apenas atualize os próprios dados relevantes
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user.id,
-      { $set: { name, bio, ranks } },
-      { new: true, runValidators: true }
-    );
-    res.json(updatedUser);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// ---- Middlewares de permissão ----
-
-// Verifica se o usuário tem cargo admin ou moderador
-const requireAdminOrMod = (req, res, next) => {
-  if (req.user && (req.user.role === 'admin' || req.user.role === 'moderador')) {
     return next();
   }
   res.status(403).json({ error: 'Acesso negado: requer admin ou moderador.' });
