@@ -13,7 +13,9 @@
 // ============================================================
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
+import { useEffect } from 'react'
+import { verificarSessao } from './store/authSlice'
 import Login          from './pages/Login'
 import Cadastro       from './pages/Cadastro'
 import Cursos         from './pages/Cursos'         // tela inicial: lista de cursos
@@ -45,6 +47,14 @@ function PublicRoute({ children }) {
 // App — define o mapa completo de rotas da aplicação
 // ------------------------------------------------------------
 export default function App() {
+  const dispatch = useDispatch()
+
+  // Ao iniciar, verifica com o backend se o token salvo ainda é válido.
+  // Se estiver expirado (401), o thunk faz logout automático.
+  useEffect(() => {
+    dispatch(verificarSessao())
+  }, [dispatch])
+
   return (
     // BrowserRouter ativa o sistema de rotas baseado na URL do navegador
     <BrowserRouter>

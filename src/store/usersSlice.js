@@ -1,78 +1,135 @@
-// Funcionalidades:
-//   - Carregar todos os usuários cadastrados no localStorage
-//   - Alterar o cargo (role) de um usuário (somente admin)
-//   - Remover um usuário (admin e moderador)
+// ============================================================
+// store/usersSlice.js
+// Gerencia a lista de usuários do painel admin/moderador.
 //
-// Os dados ficam em localStorage sob a chave "compt_users".
+// Os dados agora vêm do MongoDB via API (não mais do localStorage).
+// Rotas do backend utilizadas:
+//   GET    /auth/users          → lista todos os usuários
+//   PATCH  /auth/users/:id/role → altera o cargo de um usuário (só admin)
+//   DELETE /auth/users/:id      → remove um usuário (admin e moderador)
+// ============================================================
 
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
-// Lê todos os usuários do localStorage e retorna como array
-function lerUsuariosDoStorage() {
+const API = 'http://localhost:3001'
+
+// Obtém o token JWT da sessão salva no localStorage
+function getToken() {
   try {
-    const dados = JSON.parse(localStorage.getItem('compt_users')) || {}
-    return Object.values(dados)
+    const sessao = JSON.parse(localStorage.getItem('compt_session'))
+    return sessao ? sessao.token : null
   } catch {
-    return []
+    return null
   }
 }
 
-// Lê o objeto bruto (chave → usuário) para facilitar atualizações
-function lerUsuariosObjeto() {
-  try {
-    return JSON.parse(localStorage.getItem('compt_users')) || {}
-  } catch {
-    return {}
+// ---- Thunks ----
+
+// Carrega todos os usuários do banco (admin e moderador)
+export const carregarTodosUsuarios = createAsyncThunk(
+  'users/carregarTodosUsuarios',
+  async (_, { rejectWithValue }) => {
+    const token = getToken()
+    if (!token) return rejectWithValue('Sem token de autenticação.')
+    try {
+      const res = await fetch(`${API}/auth/users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erro ao buscar usuários.')
+      return data
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
   }
-}
+)
+
+// Altera o cargo de um usuário (somente admin)
+// payload: { uid: string, novoRole: 'cliente' | 'moderador' }
+export const alterarCargo = createAsyncThunk(
+  'users/alterarCargo',
+  async ({ uid, novoRole }, { rejectWithValue }) => {
+    const token = getToken()
+    if (!token) return rejectWithValue('Sem token de autenticação.')
+    try {
+      const res = await fetch(`${API}/auth/users/${uid}/role`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ novoRole }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erro ao alterar cargo.')
+      // Retorna uid + novoRole para atualizar o estado sem refetch completo
+      return { uid, novoRole }
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+// Remove um usuário do sistema (admin e moderador, nunca admins)
+// payload: uid (string)
+export const removerUsuario = createAsyncThunk(
+  'users/removerUsuario',
+  async (uid, { rejectWithValue }) => {
+    const token = getToken()
+    if (!token) return rejectWithValue('Sem token de autenticação.')
+    try {
+      const res = await fetch(`${API}/auth/users/${uid}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erro ao remover usuário.')
+      return uid // devolve o uid para o reducer remover da lista
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+// ---- Slice ----
 
 const usersSlice = createSlice({
   name: 'users',
   initialState: {
-    // Lista de todos os usuários cadastrados (carregada sob demanda)
-    lista: [],
+    lista:  [],
+    status: 'idle',  // idle | loading | succeeded | failed
+    erro:   null,
   },
-  reducers: {
-    // Carrega todos os usuários do localStorage para o Redux.
-    // Chamado quando o admin/moderador abre o painel.
-    carregarTodosUsuarios(state) {
-      state.lista = lerUsuariosDoStorage()
-    },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      // --- Carregar usuários ---
+      .addCase(carregarTodosUsuarios.pending, (state) => {
+        state.status = 'loading'
+        state.erro   = null
+      })
+      .addCase(carregarTodosUsuarios.fulfilled, (state, action) => {
+        state.status = 'succeeded'
+        state.lista  = action.payload
+      })
+      .addCase(carregarTodosUsuarios.rejected, (state, action) => {
+        state.status = 'failed'
+        state.erro   = action.payload
+      })
 
-    // Altera o cargo de um usuário.
-    // payload: { uid: string, novoRole: "cliente" | "moderador" }
-    // Regra de negócio: somente o admin pode chamar esta action.
-    // A verificação de permissão é feita no componente (PainelAdmin).
-    alterarCargo(state, action) {
-      const { uid, novoRole } = action.payload
-      // Atualiza no localStorage
-      const users = lerUsuariosObjeto()
-      if (users[uid]) {
-        users[uid].role = novoRole
-        localStorage.setItem('compt_users', JSON.stringify(users))
-      }
-      // Atualiza no estado Redux para refletir na interface
-      const usuario = state.lista.find(u => u.uid === uid)
-      if (usuario) {
-        usuario.role = novoRole
-      }
-    },
+      // --- Alterar cargo ---
+      .addCase(alterarCargo.fulfilled, (state, action) => {
+        const { uid, novoRole } = action.payload
+        // Atualiza localmente sem precisar refazer o GET completo
+        const usuario = state.lista.find(u => u.uid === uid)
+        if (usuario) usuario.role = novoRole
+      })
 
-    // Remove um usuário do sistema.
-    // payload: uid (string)
-    // Regra: admin e moderador podem remover, mas nunca um admin.
-    // A verificação é feita no componente.
-    removerUsuario(state, action) {
-      const uid = action.payload
-      // Remove do localStorage
-      const users = lerUsuariosObjeto()
-      delete users[uid]
-      localStorage.setItem('compt_users', JSON.stringify(users))
-      // Remove do estado Redux
-      state.lista = state.lista.filter(u => u.uid !== uid)
-    },
+      // --- Remover usuário ---
+      .addCase(removerUsuario.fulfilled, (state, action) => {
+        state.lista = state.lista.filter(u => u.uid !== action.payload)
+      })
   },
 })
 
-export const { carregarTodosUsuarios, alterarCargo, removerUsuario } = usersSlice.actions
 export default usersSlice.reducer

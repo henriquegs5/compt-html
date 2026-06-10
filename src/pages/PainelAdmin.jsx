@@ -17,18 +17,25 @@ import { atualizarRole } from '../store/authSlice'
 import Layout from '../components/Layout'
 import './PainelAdmin.css'
 
+// Lê o uid de um usuário do banco (o toJSON do modelo transforma _id → uid)
+function getUid(user) {
+  return user.uid || user._id?.toString()
+}
+
 export default function PainelAdmin() {
   const dispatch = useDispatch()
   
   // Usuário logado — usado para verificar permissões
   const usuarioLogado = useSelector(state => state.auth.usuario)
-  // Lista de todos os usuários cadastrados
+  // Lista de todos os usuários e status da requisição
   const usuarios = useSelector(state => state.users.lista)
+  const status   = useSelector(state => state.users.status)
+  const erro     = useSelector(state => state.users.erro)
 
   // Estado local para o filtro de pesquisa
   const [busca, setBusca] = useState('')
 
-  // Carrega a lista de usuários ao montar o componente
+  // Carrega a lista de usuários do banco ao montar o componente
   useEffect(() => {
     dispatch(carregarTodosUsuarios())
   }, [dispatch])
@@ -44,18 +51,18 @@ export default function PainelAdmin() {
 
   // Alterna o cargo do usuário entre "cliente" e "moderador"
   // Somente admin pode executar esta ação
-  function handleAlterarCargo(uid, cargoAtual) {
+  async function handleAlterarCargo(uid, cargoAtual) {
     const novoRole = cargoAtual === 'cliente' ? 'moderador' : 'cliente'
-    dispatch(alterarCargo({ uid, novoRole }))
-    // Se o admin estiver alterando seu próprio cargo, atualiza a sessão
-    if (uid === usuarioLogado.uid) {
+    const resultado = await dispatch(alterarCargo({ uid, novoRole }))
+    // Se o admin estiver alterando seu próprio cargo, atualiza a sessão local
+    if (alterarCargo.fulfilled.match(resultado) && uid === getUid(usuarioLogado)) {
       dispatch(atualizarRole(novoRole))
     }
   }
 
   // Remove um usuário do sistema
   // Regra: não é possível remover um admin
-  function handleRemover(uid) {
+  async function handleRemover(uid) {
     if (window.confirm('Tem certeza que deseja remover este usuário?')) {
       dispatch(removerUsuario(uid))
     }
@@ -77,6 +84,10 @@ export default function PainelAdmin() {
           ? 'Gerencie os usuários e seus cargos na plataforma.'
           : 'Visualize os usuários cadastrados na plataforma.'}
       </p>
+
+      {/* Feedback de carregamento e erros */}
+      {status === 'loading' && <p className="admin-vazio">Carregando usuários…</p>}
+      {erro && <p className="admin-vazio" style={{ color: 'var(--color-danger, #e74c3c)' }}>Erro: {erro}</p>}
 
       {/* Barra de pesquisa para filtrar usuários */}
       <input
@@ -100,14 +111,17 @@ export default function PainelAdmin() {
             </tr>
           </thead>
           <tbody>
-            {usuariosFiltrados.map(user => (
-              <tr key={user.uid}>
+            {usuariosFiltrados.map(user => {
+              // uid pode vir como 'uid' (toJSON do modelo) ou '_id' dependendo da rota
+              const uid = getUid(user)
+              return (
+              <tr key={uid}>
                 {/* Coluna: avatar + nome */}
                 <td>
                   <div className="admin-user-cell">
                     <img
                       className="admin-avatar"
-                      src={user.avatarUrl || `https://i.pravatar.cc/40?u=${user.uid}`}
+                      src={user.avatarUrl || `https://i.pravatar.cc/40?u=${uid}`}
                       alt={user.name}
                     />
                     <span>{user.name}</span>
@@ -138,17 +152,17 @@ export default function PainelAdmin() {
                     {isAdmin && user.role !== 'admin' && (
                       <button
                         className={`admin-btn ${user.role === 'cliente' ? 'admin-btn--promover' : 'admin-btn--despromover'}`}
-                        onClick={() => handleAlterarCargo(user.uid, user.role)}
+                        onClick={() => handleAlterarCargo(uid, user.role)}
                       >
                         {textoBotaoCargo(user.role)}
                       </button>
                     )}
 
                     {/* Botão de remover — admin e moderador podem, mas nunca em admins */}
-                    {user.role !== 'admin' && user.uid !== usuarioLogado.uid && (
+                    {user.role !== 'admin' && uid !== getUid(usuarioLogado) && (
                       <button
                         className="admin-btn admin-btn--remover"
-                        onClick={() => handleRemover(user.uid)}
+                        onClick={() => handleRemover(uid)}
                       >
                         Remover
                       </button>
@@ -156,7 +170,8 @@ export default function PainelAdmin() {
                   </div>
                 </td>
               </tr>
-            ))}
+              )
+            })}
           </tbody>
         </table>
 
