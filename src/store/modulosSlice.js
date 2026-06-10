@@ -2,19 +2,32 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 //maia
 const API = 'http://localhost:3001'
 
-// Busca os módulos do back-end mockado
+// Busca os módulos do back-end
+// A rota GET /modulos é protegida por JWT, então precisamos enviar
+// o token salvo na sessão (localStorage) no header Authorization.
 export const fetchModulos = createAsyncThunk('modulos/fetchModulos', async () => {
-  const res = await fetch(`${API}/modulos`)
+  const sessao = JSON.parse(localStorage.getItem('compt_session'))
+  const token = sessao ? sessao.token : ''
+  const res = await fetch(`${API}/modulos`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  })
   return await res.json()
 })
 
 // Atualiza o status de um módulo no back-end
+// A rota PATCH /modulos/:id exige JWT (e privilégios de admin/moderador),
+// por isso também enviamos o token no header Authorization.
 export const setModuloStatus = createAsyncThunk(
   'modulos/setModuloStatus',
   async ({ id, status }) => {
+    const sessao = JSON.parse(localStorage.getItem('compt_session'))
+    const token = sessao ? sessao.token : ''
     await fetch(`${API}/modulos/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({ status }),
     })
     return { id, status }
