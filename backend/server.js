@@ -2,18 +2,12 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import passport from 'passport';
 import passportConfig from './config/passport.js';
 import authRoutes from './routes/auth.js';
 import cursosRoutes from './routes/cursos.js';
 import modulosRoutes from './routes/modulos.js';
 import mensagensRoutes from './routes/mensagens.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -27,34 +21,16 @@ app.use(express.json());
 app.use(passport.initialize());
 passportConfig(passport);
 
-// Conexão com MongoDB
+// Conexão com MongoDB Atlas
 mongoose.connect(MONGO_URI)
-  .then(() => console.log('✅ MongoDB conectado com sucesso!'))
+  .then(() => console.log('✅ MongoDB Atlas conectado com sucesso!'))
   .catch(err => console.error('❌ Erro ao conectar no MongoDB:', err));
 
-// Rotas Mongoose
+// Rotas reais (MongoDB Atlas)
 app.use('/auth', authRoutes);
 app.use('/cursos', cursosRoutes);
 app.use('/modulos', modulosRoutes);
 app.use('/mensagens', mensagensRoutes);
-
-// Rotas Mockadas (Lidas do db.json) para manter compatibilidade com o frontend
-app.get('/mensagens', (req, res) => {
-  const dbPath = path.resolve(__dirname, '../db.json');
-  const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-  const canal = req.query.canal;
-  let mensagens = dbData.mensagens;
-  if (canal) {
-    mensagens = mensagens.filter(m => m.canal === canal);
-  }
-  res.json(mensagens);
-});
-
-app.get('/estatisticas', (req, res) => {
-  const dbPath = path.resolve(__dirname, '../db.json');
-  const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-  res.json(dbData.estatisticas);
-});
 
 // Iniciar servidor
 app.listen(PORT, () => {

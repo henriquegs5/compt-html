@@ -69,6 +69,17 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// GET /auth/me - Retorna dados do usuário logado (valida o token)
+router.get('/me', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) return res.status(404).json({ error: 'Usuário não encontrado.' });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 const requireAdminOrMod = (req, res, next) => {
   if (req.user && (req.user.role === 'admin' || req.user.role === 'moderador')) {
     return next();
