@@ -9,10 +9,12 @@
     "start": "concurrently \"npm run dev\" \"npm run api\"",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "npm install --prefix backend"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
+    "mongodb": "^7.4.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-redux": "^9.2.0",

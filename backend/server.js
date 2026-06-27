@@ -2,6 +2,14 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import dns from 'dns';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Força o uso de DNS público (Google/Cloudflare) para resolver o registro SRV
+// do Atlas (mongodb+srv://). Sem isso, alguns DNS de provedor/faculdade recusam
+// a consulta SRV e a conexão falha com "querySrv ECONNREFUSED".
+dns.setServers(['8.8.8.8', '1.1.1.1']);
 import passport from 'passport';
 import passportConfig from './config/passport.js';
 import authRoutes from './routes/auth.js';
@@ -9,7 +17,12 @@ import cursosRoutes from './routes/cursos.js';
 import modulosRoutes from './routes/modulos.js';
 import mensagensRoutes from './routes/mensagens.js';
 
-dotenv.config();
+// Carrega o .env a partir da pasta deste arquivo (backend/), e não do
+// diretório onde o comando foi executado. Sem isso, ao rodar "npm run api"
+// da raiz do projeto, o dotenv não acha backend/.env, o MONGO_URI fica vazio
+// e o servidor cai no fallback do Mongo local (localhost:27017).
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,7 +36,12 @@ passportConfig(passport);
 
 // Conexão com MongoDB Atlas
 mongoose.connect(MONGO_URI)
-  .then(() => console.log('✅ MongoDB Atlas conectado com sucesso!'))
+  .then(() => {
+    // Mostra o host real para não dar falsa impressão de estar no Atlas
+    const host = mongoose.connection.host;
+    const db = mongoose.connection.name;
+    console.log(`✅ MongoDB conectado: ${host} (db: ${db})`);
+  })
   .catch(err => console.error('❌ Erro ao conectar no MongoDB:', err));
 
 // Rotas reais (MongoDB Atlas)
