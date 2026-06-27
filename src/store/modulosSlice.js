@@ -14,26 +14,6 @@ export const fetchModulos = createAsyncThunk('modulos/fetchModulos', async () =>
   return await res.json()
 })
 
-// Atualiza o status de um módulo no back-end
-// A rota PATCH /modulos/:id exige JWT (e privilégios de admin/moderador),
-// por isso também enviamos o token no header Authorization.
-export const setModuloStatus = createAsyncThunk(
-  'modulos/setModuloStatus',
-  async ({ id, status }) => {
-    const sessao = JSON.parse(localStorage.getItem('compt_session'))
-    const token = sessao ? sessao.token : ''
-    await fetch(`${API}/modulos/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ status }),
-    })
-    return { id, status }
-  }
-)
-
 const modulosSlice = createSlice({
   name: 'modulos',
   initialState: {
@@ -52,11 +32,6 @@ const modulosSlice = createSlice({
       .addCase(fetchModulos.rejected, (state, action) => {
         state.status = 'failed'
         state.erro = action.error.message
-      })
-      .addCase(setModuloStatus.fulfilled, (state, action) => {
-        const { id, status } = action.payload
-        const modulo = state.items.find(m => m.id === id)
-        if (modulo) modulo.status = status
       })
   },
 })

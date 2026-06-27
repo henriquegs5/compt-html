@@ -16,6 +16,7 @@ import authRoutes from './routes/auth.js';
 import cursosRoutes from './routes/cursos.js';
 import modulosRoutes from './routes/modulos.js';
 import mensagensRoutes from './routes/mensagens.js';
+import progressosRoutes from './routes/progressos.js';
 
 // Carrega o .env a partir da pasta deste arquivo (backend/), e não do
 // diretório onde o comando foi executado. Sem isso, ao rodar "npm run api"
@@ -49,6 +50,7 @@ app.use('/auth', authRoutes);
 app.use('/cursos', cursosRoutes);
 app.use('/modulos', modulosRoutes);
 app.use('/mensagens', mensagensRoutes);
+app.use('/progressos', progressosRoutes);
 
 // Iniciar servidor
 app.listen(PORT, () => {

@@ -1,22 +1,27 @@
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchModulos } from '../store/modulosSlice'
+import { fetchProgressos } from '../store/progressoSlice'
 import Layout from '../components/Layout'
 import './Progressos.css'
 //maia
 export default function Progressos() {
   const dispatch = useDispatch()
-  const { items, status } = useSelector(s => s.modulos)
+  const { items } = useSelector(s => s.modulos)
+  // Mapa { moduloId: status } com o progresso PESSOAL do usuário logado
+  const progressoPorModulo = useSelector(s => s.progresso.byModulo)
   // s == state
 
-  useEffect(() => { 
-    // quando algo mudar no site executa esse codigo
-    //dispatch e a funcao q envia acoes ao redux
-    dispatch(fetchModulos())//busca os modulos no slice
+  useEffect(() => {
+    // Busca os módulos (total) e o progresso pessoal do usuário
+    dispatch(fetchModulos())
+    dispatch(fetchProgressos())
   }, [dispatch])
 
-  const concluidos  = items.filter(m => m.status === 'completed').length
-  const emAndamento = items.filter(m => m.status === 'in-progress').length
+  // Contadores baseados no progresso PESSOAL, não mais no status global.
+  const valores     = Object.values(progressoPorModulo)
+  const concluidos  = valores.filter(s => s === 'completed').length
+  const emAndamento = valores.filter(s => s === 'in-progress').length
   const pct         = items.length ? Math.round((concluidos / items.length) * 100) : 0
   // m == modulos
   return (

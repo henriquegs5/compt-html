@@ -8,6 +8,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import authReducer         from './authSlice'
 import modulosReducer      from './modulosSlice'
+import progressoReducer    from './progressoSlice'  // progresso pessoal por usuário
 import cursosReducer       from './cursosSlice'   // novo — gerencia cursos e módulos
 import perfilReducer       from './perfilSlice'
 import chatReducer         from './chatSlice'
@@ -22,6 +23,7 @@ export const store = configureStore({
   reducer: {
     auth:         authReducer,
     modulos:      modulosReducer,
+    progresso:    progressoReducer,  // mapa { moduloId: status } do usuário logado
     cursos:       cursosReducer,       // estado acessado via useSelector(s => s.cursos)
     perfil:       perfilReducer,
     chat:         chatReducer,

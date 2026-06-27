@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fazerLogout } from '../store/authSlice'
+import { limparProgresso } from '../store/progressoSlice'
 import './Layout.css'
 
 export default function Layout({ children }) {
@@ -23,6 +24,7 @@ export default function Layout({ children }) {
   }, [])
   function handleLogout() {
     dispatch(fazerLogout())
+    dispatch(limparProgresso())  // limpa o progresso pessoal ao sair
     navigate('/login')
   }
 

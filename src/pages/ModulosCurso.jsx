@@ -16,7 +16,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import {
   fetchCursos,
   fetchModulosDoCurso,
-  setModuloStatusCurso,
   limparModulosCurso,
   adicionarModulo,
   editarModulo,
@@ -24,6 +23,8 @@ import {
   selectAllCursos,
   selectAllModulosDoCurso,
 } from '../store/cursosSlice'
+// Progresso PESSOAL do usuário (substitui o antigo status global do módulo)
+import { fetchProgressos, setProgresso } from '../store/progressoSlice'
 import Layout from '../components/Layout'
 import Modal  from '../components/Modal'
 import Toast  from '../components/Toast'
@@ -39,8 +40,19 @@ export default function ModulosCurso() {
   // selectAllCursos e selectAllModulosDoCurso são gerados pelo EntityAdapter
   // e convertem o estado normalizado { ids, entities } em um array simples
   const cursos        = useSelector(selectAllCursos)
-  const modulosDosCurso = useSelector(selectAllModulosDoCurso)
+  const modulosBrutos = useSelector(selectAllModulosDoCurso)
   const modulosStatus = useSelector(s => s.cursos.modulosDosCurso.status)
+
+  // Mapa { moduloId: status } com o progresso PESSOAL do usuário logado.
+  const progressoPorModulo = useSelector(s => s.progresso.byModulo)
+
+  // Sobrepõe o progresso do usuário em cada módulo: o status exibido vem do
+  // progresso pessoal; se o usuário ainda não mexeu no módulo, fica 'locked'.
+  // Assim o status deixa de ser global e passa a ser por usuário.
+  const modulosDosCurso = modulosBrutos.map(m => ({
+    ...m,
+    status: progressoPorModulo[m.id] ?? 'locked',
+  }))
 
   // Usuário logado — usado para controle de permissão (admin/moderador)
   const usuario = useSelector(s => s.auth.usuario)
@@ -87,13 +99,17 @@ export default function ModulosCurso() {
 
     // Busca os módulos do curso com o id da URL
     dispatch(fetchModulosDoCurso(cursoId))
+
+    // Busca o progresso pessoal do usuário para sobrepor nos módulos
+    dispatch(fetchProgressos())
   }, [dispatch, cursoId])  // re-executa se o cursoId mudar
 
   // Chamada quando o usuário clica em "Iniciar" ou "Marcar como concluído"
   // novoStatus pode ser: 'in-progress' ou 'completed'
   function handleAcao(modulo, novoStatus) {
-    // Envia o PATCH para a API e atualiza o estado local
-    dispatch(setModuloStatusCurso({ id: modulo.id, status: novoStatus }))
+    // Grava o progresso PESSOAL do usuário neste módulo (rota /progressos,
+    // protegida por JWT). Não altera mais o módulo global.
+    dispatch(setProgresso({ moduloId: modulo.id, status: novoStatus }))
     setModalModulo(null)  // fecha o modal
 
     // Define a mensagem do toast dependendo da ação

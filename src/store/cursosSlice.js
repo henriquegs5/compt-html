@@ -53,33 +53,6 @@ export const fetchModulosDoCurso = createAsyncThunk(
 
 
 /**
- * Atualiza o status de um módulo (ex: locked, in-progress, completed).
- * @async
- * @function setModuloStatusCurso
- * @param {Object} payload - Objeto com id do módulo e o novo status
- * @param {string} payload.id - ID do módulo
- * @param {string} payload.status - Novo status
- * @returns {Promise<Object>} Retorna o id e o status atualizado
- */
-export const setModuloStatusCurso = createAsyncThunk(
-  'cursos/setModuloStatusCurso',
-  async ({ id, status }) => {
-    const sessao = JSON.parse(localStorage.getItem('compt_session'));
-    const token = sessao ? sessao.token : '';
-    await fetch(`${API}/modulos/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ status }),  // manda só o campo que mudou
-    })
-    return { id, status }  // devolve o id e novo status para atualizar o estado local
-  }
-)
-
-
-/**
  * Adiciona um novo curso ao banco de dados.
  * @async
  * @function adicionarCurso
@@ -291,15 +264,6 @@ const cursosSlice = createSlice({
       .addCase(fetchModulosDoCurso.rejected,  (state, action) => {
         state.modulosDosCurso.status = 'failed'
         state.erro = action.error.message
-      })
-
-      // --- Atualizar status do módulo ---
-      // Quando o PATCH confirma, atualiza o estado local sem precisar
-      // fazer uma nova requisição GET (optimistic update local)
-      .addCase(setModuloStatusCurso.fulfilled, (state, action) => {
-        const { id, status } = action.payload
-        // updateOne recebe { id, changes } — só muda os campos indicados
-        modulosAdapter.updateOne(state.modulosDosCurso, { id, changes: { status } })
       })
 
       // --- Adicionar curso ---
