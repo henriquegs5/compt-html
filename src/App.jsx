@@ -23,6 +23,7 @@ import ModulosCurso   from './pages/ModulosCurso'   // módulos de um curso espe
 import Progressos     from './pages/Progressos'
 import Comunidade     from './pages/Comunidade'
 import Estatisticas   from './pages/Estatisticas'
+import Pagamento      from './pages/Pagamento'
 import Perfil         from './pages/Perfil'
 import Subscription   from './pages/Subscription'
 import Config         from './pages/Config'
@@ -77,6 +78,10 @@ export default function App() {
             Ex: /cursos/1 → Fortnite | /cursos/2 → LoL */}
         <Route path="/cursos/:cursoId"
           element={<ProtectedRoute><ModulosCurso /></ProtectedRoute>}
+        />
+
+        <Route path="/pagamento/:cursoId"
+          element={<ProtectedRoute><Pagamento /></ProtectedRoute>}
         />
 
         <Route path="/progressos"

@@ -16,6 +16,7 @@ import authRoutes from './routes/auth.js';
 import cursosRoutes from './routes/cursos.js';
 import modulosRoutes from './routes/modulos.js';
 import mensagensRoutes from './routes/mensagens.js';
+import { seedAdmin } from './seedAdmin.js';
 
 // Carrega o .env a partir da pasta deste arquivo (backend/), e não do
 // diretório onde o comando foi executado. Sem isso, ao rodar "npm run api"
@@ -36,11 +37,18 @@ passportConfig(passport);
 
 // Conexão com MongoDB Atlas
 mongoose.connect(MONGO_URI)
-  .then(() => {
+  .then(async () => {
     // Mostra o host real para não dar falsa impressão de estar no Atlas
     const host = mongoose.connection.host;
     const db = mongoose.connection.name;
     console.log(`✅ MongoDB conectado: ${host} (db: ${db})`);
+    
+    // Cria o usuário admin se ele não existir no banco
+    try {
+      await seedAdmin();
+    } catch (seedErr) {
+      console.error('❌ Erro ao semear usuário admin:', seedErr);
+    }
   })
   .catch(err => console.error('❌ Erro ao conectar no MongoDB:', err));
 

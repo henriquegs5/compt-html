@@ -1,0 +1,179 @@
+.pagamento-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+.btn-voltar-pgto {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  transition: color var(--transition);
+}
+.btn-voltar-pgto:hover {
+  color: var(--text);
+}
+
+.pagamento-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  background: rgba(30, 36, 51, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(105, 242, 196, 0.15);
+  border-radius: 24px;
+  padding: 3rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Info do Curso */
+.pagamento-info h2 {
+  font-size: 1.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.pgto-curso-card {
+  display: flex;
+  gap: 1.2rem;
+  background: rgba(15, 17, 23, 0.6);
+  padding: 1rem;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.pgto-curso-card img {
+  width: 100px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.pgto-curso-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: .4rem;
+}
+.pgto-price {
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.pgto-benefits p {
+  color: var(--text-muted);
+  margin-bottom: .8rem;
+  font-size: .95rem;
+}
+
+/* Formulário de Pagamento */
+.pagamento-form-wrapper h2 {
+  font-size: 1.4rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Cartão Fake */
+.credit-card-preview {
+  background: linear-gradient(135deg, #2a3042, #181d27);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  position: relative;
+  overflow: hidden;
+}
+.credit-card-preview::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(105, 242, 196, 0.1) 0%, transparent 70%);
+}
+.cc-chip {
+  width: 40px;
+  height: 30px;
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  opacity: 0.8;
+}
+.cc-number {
+  font-family: monospace;
+  font-size: 1.3rem;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+.cc-details {
+  display: flex;
+  justify-content: space-between;
+  color: rgba(255,255,255,0.7);
+  font-size: .85rem;
+  text-transform: uppercase;
+}
+
+/* Form inputs */
+.pagamento-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+.pagamento-form label {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  font-size: .85rem;
+  color: var(--text-muted);
+}
+.pagamento-form input {
+  background: rgba(15, 17, 23, 0.5);
+  border: 1px solid var(--border);
+  padding: .8rem 1rem;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 1rem;
+  transition: border-color var(--transition);
+}
+.pagamento-form input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: rgba(15, 17, 23, 0.8);
+}
+.form-row-pgto {
+  display: flex;
+  gap: 1rem;
+}
+.form-row-pgto label {
+  flex: 1;
+}
+
+.btn-confirmar-pgto {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #0f1117;
+  border: none;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  box-shadow: 0 4px 15px rgba(105, 242, 196, 0.2);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.btn-confirmar-pgto:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(105, 242, 196, 0.3);
+}
+.btn-confirmar-pgto:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .pagamento-content {
+    grid-template-columns: 1fr;
+    padding: 1.5rem;
+  }
+}

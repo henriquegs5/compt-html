@@ -3,6 +3,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import {
   fetchCursos,
+  fetchCursosMatriculados,
+  matricularCurso,
+  desmatricularCurso,
   adicionarCurso,
   editarCurso,
   excluirCurso,
@@ -11,6 +14,7 @@ import {
 import Layout from '../components/Layout'
 import Modal from '../components/Modal'
 import './Cursos.css'
+import './Cursos-extras.css'
 
 /**
  * Componente de listagem e gerenciamento de Cursos.
@@ -27,10 +31,13 @@ export default function Cursos() {
   // a partir do estado normalizado { ids: [], entities: {} }
   const items  = useSelector(selectAllCursos)
   const status = useSelector(s => s.cursos.status)
+  const matriculados = useSelector(s => s.cursos.matriculados)
+  const matriculadosStatus = useSelector(s => s.cursos.matriculadosStatus)
   const usuario = useSelector(s => s.auth.usuario)
 
   const podeAdicionar = usuario?.role === 'admin' || usuario?.role === 'moderador'
 
+  const [activeTab, setActiveTab] = useState('disponiveis')
   const [modalAberto, setModalAberto] = useState(false)
   const [cursoEditandoId, setCursoEditandoId] = useState(null)
   const [termoPesquisa, setTermoPesquisa] = useState('')
@@ -38,13 +45,23 @@ export default function Cursos() {
     titulo: '',
     descricao: '',
     imagem: '',
+    pago: false,
+    preco: 0,
+    horas: 0
   })
 
   useEffect(() => {
     if (status === 'idle') dispatch(fetchCursos())
-  }, [dispatch, status])
+    if (usuario && matriculadosStatus === 'idle') dispatch(fetchCursosMatriculados())
+  }, [dispatch, status, matriculadosStatus, usuario])
 
-  const cursosFiltrados = items.filter(curso =>
+  const cursosPorAba = items.filter(curso => {
+    const isMatriculado = matriculados.includes(curso.id)
+    if (activeTab === 'matriculados') return isMatriculado
+    return !isMatriculado
+  })
+
+  const cursosFiltrados = cursosPorAba.filter(curso =>
     curso.titulo.toLowerCase().includes(termoPesquisa.toLowerCase()) ||
     curso.descricao.toLowerCase().includes(termoPesquisa.toLowerCase())
   )
@@ -54,7 +71,7 @@ export default function Cursos() {
    * @function abrirModal
    */
   function abrirModal() {
-    setNovoCurso({ titulo: '', descricao: '', imagem: '' })
+    setNovoCurso({ titulo: '', descricao: '', imagem: '', pago: false, preco: 0, horas: 0 })
     setCursoEditandoId(null)
     setModalAberto(true)
   }
@@ -69,6 +86,9 @@ export default function Cursos() {
       titulo: curso.titulo,
       descricao: curso.descricao,
       imagem: curso.imagem || '',
+      pago: curso.pago || false,
+      preco: curso.preco || 0,
+      horas: curso.horas || 0
     })
     setCursoEditandoId(curso.id)
     setModalAberto(true)
@@ -80,8 +100,11 @@ export default function Cursos() {
    * @param {React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement>} e - O evento de mudança
    */
   function handleChange(e) {
-    const { name, value } = e.target
-    setNovoCurso(prev => ({ ...prev, [name]: value }))
+    const { name, value, type, checked } = e.target
+    setNovoCurso(prev => ({ 
+      ...prev, 
+      [name]: type === 'checkbox' ? checked : value 
+    }))
   }
 
   /**
@@ -125,6 +148,24 @@ export default function Cursos() {
     <Layout>
       <h1 className="title">Cursos Disponíveis</h1>
       <p className="subtitle">Escolha um curso para ver os módulos</p>
+
+      {usuario && (
+        <div className="cursos-tabs">
+          <button 
+            className={`cursos-tab ${activeTab === 'disponiveis' ? 'cursos-tab--active' : ''}`}
+            onClick={() => setActiveTab('disponiveis')}
+          >
+            Cursos Disponíveis
+          </button>
+          <button 
+            className={`cursos-tab ${activeTab === 'matriculados' ? 'cursos-tab--active' : ''}`}
+            onClick={() => setActiveTab('matriculados')}
+          >
+            Meus Cursos
+          </button>
+        </div>
+      )}
+
       <input
         type="text"
         className="page-search"
@@ -139,7 +180,13 @@ export default function Cursos() {
         {cursosFiltrados.length === 0 && termoPesquisa && (
           <p className="loading-msg">Nenhum curso encontrado para "{termoPesquisa}".</p>
         )}
-        {cursosFiltrados.map(curso => (
+        {cursosFiltrados.map(curso => {
+          const podeEditarCurso = usuario && (
+            curso.criadorId === usuario.id || 
+            (!curso.criadorId && usuario.role === 'admin')
+          );
+
+          return (
           <div className="curso-card" key={curso.id}>
             <div className="curso-image">
               <img
@@ -150,7 +197,7 @@ export default function Cursos() {
               <div className="curso-overlay" />
             </div>
 
-            {podeAdicionar && (
+            {podeEditarCurso && (
               <button
                 className="btn-editar-curso"
                 onClick={() => abrirModalEdicao(curso)}
@@ -161,6 +208,20 @@ export default function Cursos() {
             )}
 
             <div className="curso-body">
+              {curso.rascunho && <span className="curso-badge curso-badge--rascunho">Rascunho (Vazio)</span>}
+              <div className="curso-meta">
+                {curso.horas > 0 && <span className="curso-badge curso-badge--horas">⏱ {curso.horas}h</span>}
+                <span className="curso-badge curso-badge--rating">
+                  ★ {curso.mediaAvaliacoes ? curso.mediaAvaliacoes.toFixed(1) : 'Novo'} 
+                  {curso.totalAvaliacoes > 0 && ` (${curso.totalAvaliacoes})`}
+                </span>
+                {curso.pago ? (
+                  <span className="curso-badge curso-badge--pago">R$ {curso.preco.toFixed(2)}</span>
+                ) : (
+                  <span className="curso-badge curso-badge--gratis">Grátis</span>
+                )}
+              </div>
+              
               <h2 className="curso-titulo">{curso.titulo}</h2>
               <p className="curso-descricao">{curso.descricao}</p>
 
@@ -169,23 +230,59 @@ export default function Cursos() {
                   {curso.totalModulos} módulos
                 </span>
 
-                <button
-                  className="btn-abrir-curso"
-                  onClick={() => {
-                    if (!usuario) {
-                      alert('Você precisa fazer login para acessar este curso.')
-                      navigate('/login')
-                    } else {
-                      navigate(`/cursos/${curso.id}`)
-                    }
-                  }}
-                >
-                  Abrir curso
-                </button>
+                {matriculados.includes(curso.id) || podeAdicionar ? (
+                  <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                    <button
+                      className="btn-abrir-curso"
+                      style={{ flex: 1 }}
+                      onClick={() => navigate(`/cursos/${curso.id}`)}
+                    >
+                      Abrir curso
+                    </button>
+                    {matriculados.includes(curso.id) && (
+                      <button
+                        className="btn-abrir-curso"
+                        style={{ flex: 0, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                        onClick={() => dispatch(desmatricularCurso(curso.id))}
+                        title="Cancelar Matrícula"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ) : curso.pago ? (
+                  <button
+                    className="btn-abrir-curso btn-comprar-curso"
+                    onClick={() => {
+                      if (!usuario) {
+                        alert('Você precisa fazer login para comprar este curso.')
+                        navigate('/login')
+                      } else {
+                        navigate(`/pagamento/${curso.id}`)
+                      }
+                    }}
+                  >
+                    Comprar · R$ {curso.preco.toFixed(2)}
+                  </button>
+                ) : (
+                  <button
+                    className="btn-abrir-curso btn-matricular-curso"
+                    onClick={() => {
+                      if (!usuario) {
+                        alert('Você precisa fazer login para se matricular.')
+                        navigate('/login')
+                      } else {
+                        dispatch(matricularCurso(curso.id))
+                      }
+                    }}
+                  >
+                    Matricular
+                  </button>
+                )}
               </div>
             </div>
           </div>
-        ))}
+        )})}
 
         {podeAdicionar && (
           <button
@@ -239,6 +336,46 @@ export default function Cursos() {
                 value={novoCurso.imagem}
                 onChange={handleChange}
                 placeholder="Ex: valorant.jpg"
+              />
+            </label>
+
+            <div className="curso-form-row">
+              <label className="toggle-label">
+                Curso pago?
+                <input
+                  type="checkbox"
+                  name="pago"
+                  checked={novoCurso.pago}
+                  onChange={handleChange}
+                  className="toggle-checkbox"
+                />
+                <span className="toggle-switch"></span>
+              </label>
+            </div>
+
+            {novoCurso.pago && (
+              <label>
+                Preço (R$)
+                <input
+                  type="number"
+                  name="preco"
+                  value={novoCurso.preco}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                />
+              </label>
+            )}
+
+            <label>
+              Horas totais
+              <input
+                type="number"
+                name="horas"
+                value={novoCurso.horas}
+                onChange={handleChange}
+                min="0"
+                step="1"
               />
             </label>
 

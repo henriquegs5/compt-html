@@ -15,7 +15,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   fetchCursos,
+  fetchCursosMatriculados,
   fetchModulosDoCurso,
+  fetchProgressoDoCurso,
   setModuloStatusCurso,
   limparModulosCurso,
   adicionarModulo,
@@ -23,11 +25,15 @@ import {
   excluirModulo,
   selectAllCursos,
   selectAllModulosDoCurso,
+  fetchReviews,
+  enviarReview,
+  selectAllReviews,
 } from '../store/cursosSlice'
 import Layout from '../components/Layout'
 import Modal  from '../components/Modal'
 import Toast  from '../components/Toast'
 import './ModulosCurso.css'
+import './ModulosCurso-extras.css'
 
 export default function ModulosCurso() {
   // Pega o :cursoId diretamente da URL (ex: "1", "2", "3"...)
@@ -41,10 +47,25 @@ export default function ModulosCurso() {
   const cursos        = useSelector(selectAllCursos)
   const modulosDosCurso = useSelector(selectAllModulosDoCurso)
   const modulosStatus = useSelector(s => s.cursos.modulosDosCurso.status)
+  const progressoDosModulos = useSelector(s => s.cursos.progressoDosModulos)
+  
+  const matriculados = useSelector(s => s.cursos.matriculados)
+  const matriculadosStatus = useSelector(s => s.cursos.matriculadosStatus)
+
+  const reviews = useSelector(selectAllReviews)
+  const reviewsStatus = useSelector(s => s.cursos.reviews.status)
+
+  // Encontra o objeto do curso atual pela lista de cursos já carregada.
+  // Compara string com string pois ambos vêm como texto ("1", "2"...)
+  const curso = cursos.find(c => c.id === cursoId)
 
   // Usuário logado — usado para controle de permissão (admin/moderador)
   const usuario = useSelector(s => s.auth.usuario)
-  const podeGerenciar = usuario?.role === 'admin' || usuario?.role === 'moderador'
+  const isAdMod = usuario?.role === 'admin' || usuario?.role === 'moderador'
+  const podeGerenciar = usuario && curso && (
+    curso.criadorId === usuario.id || 
+    (!curso.criadorId && usuario.role === 'admin')
+  );
 
   // Estado local para controlar qual módulo está sendo exibido no modal de progresso
   const [modalModulo, setModalModulo] = useState(null)
@@ -70,9 +91,9 @@ export default function ModulosCurso() {
     link: '',
   })
 
-  // Encontra o objeto do curso atual pela lista de cursos já carregada.
-  // Compara string com string pois ambos vêm como texto ("1", "2"...)
-  const curso = cursos.find(c => c.id === cursoId)
+  // ---- Estados para avaliações ----
+  const [reviewForm, setReviewForm] = useState({ nota: 0, texto: '' })
+  const [hoverStar, setHoverStar] = useState(0)
 
   // useEffect roda toda vez que o cursoId muda na URL.
   // Isso acontece quando o usuário troca de curso diretamente.
@@ -85,21 +106,61 @@ export default function ModulosCurso() {
     // enquanto os novos estão carregando
     dispatch(limparModulosCurso())
 
+    if (usuario) {
+      dispatch(fetchProgressoDoCurso(cursoId))
+    }
+
     // Busca os módulos do curso com o id da URL
     dispatch(fetchModulosDoCurso(cursoId))
+    
+    // Busca as reviews do curso
+    dispatch(fetchReviews(cursoId))
   }, [dispatch, cursoId])  // re-executa se o cursoId mudar
+
+  useEffect(() => {
+    if (usuario && matriculadosStatus === 'idle') {
+      dispatch(fetchCursosMatriculados())
+    }
+  }, [dispatch, usuario, matriculadosStatus])
+
+  useEffect(() => {
+    // Se a lista de cursos e matriculas já foram carregadas:
+    if (cursos.length > 0 && matriculadosStatus === 'succeeded' && curso) {
+      if (curso.pago && !podeGerenciar && !matriculados.includes(cursoId)) {
+        // Redireciona para pagamento se for pago e não matriculado e não for admin/moderador
+        navigate(`/pagamento/${cursoId}`, { replace: true })
+      }
+    }
+  }, [cursos, matriculadosStatus, matriculados, curso, podeGerenciar, cursoId, navigate])
+
+  useEffect(() => {
+    if (usuario && reviews.length > 0) {
+      const minhaReview = reviews.find(r => r.userId === usuario.id)
+      if (minhaReview) {
+        setReviewForm({ nota: minhaReview.nota, texto: minhaReview.texto || '' })
+      }
+    }
+  }, [reviews, usuario])
 
   // Chamada quando o usuário clica em "Iniciar" ou "Marcar como concluído"
   // novoStatus pode ser: 'in-progress' ou 'completed'
   function handleAcao(modulo, novoStatus) {
-    // Envia o PATCH para a API e atualiza o estado local
-    dispatch(setModuloStatusCurso({ id: modulo.id, status: novoStatus }))
+    if (!usuario) {
+      alert('Você precisa fazer login para salvar o progresso.')
+      navigate('/login')
+      return
+    }
+
+    const statusAtual = progressoDosModulos[modulo.id] || 'locked'
+
+    // Envia o POST para a API e atualiza o estado local
+    dispatch(setModuloStatusCurso({ id: modulo.id, status: novoStatus, cursoId }))
     setModalModulo(null)  // fecha o modal
 
     // Define a mensagem do toast dependendo da ação
     let msg = 'Status atualizado!'
     if (novoStatus === 'completed') msg = 'Módulo concluído!'
-    else if (modulo.status === 'completed' && novoStatus === 'in-progress') msg = 'Conclusão desfeita!'
+    else if (statusAtual === 'completed' && novoStatus === 'in-progress') msg = 'Conclusão desfeita!'
     else if (novoStatus === 'in-progress') msg = 'Módulo iniciado!'
 
     setToast(msg)
@@ -171,6 +232,17 @@ export default function ModulosCurso() {
     setToast('Módulo excluído!')
   }
 
+  // Handle Review Submit
+  function handleReviewSubmit(e) {
+    e.preventDefault()
+    if (reviewForm.nota === 0) {
+      alert('Por favor, selecione uma nota de 1 a 5 estrelas.')
+      return
+    }
+    dispatch(enviarReview({ cursoId, ...reviewForm }))
+    setToast('Avaliação salva com sucesso!')
+  }
+
   return (
     <Layout>
 
@@ -228,9 +300,9 @@ export default function ModulosCurso() {
 
             {/* Badge de status só aparece se o módulo já foi iniciado ou concluído.
                 Módulos "locked" (não iniciados) não mostram badge */}
-            {mod.status !== 'locked' && (
-              <span className={`module-badge module-badge--${mod.status}`}>
-                {mod.status === 'completed' ? '✓ Concluído' : '▶ Em andamento'}
+            {(progressoDosModulos[mod.id] && progressoDosModulos[mod.id] !== 'locked') && (
+              <span className={`module-badge module-badge--${progressoDosModulos[mod.id]}`}>
+                {progressoDosModulos[mod.id] === 'completed' ? '✓ Concluído' : '▶ Em andamento'}
               </span>
             )}
           </div>
@@ -250,6 +322,69 @@ export default function ModulosCurso() {
         )}
       </div>
 
+      {/* --- SEÇÃO DE AVALIAÇÕES --- */}
+      <div className="reviews-section">
+        <div className="reviews-header">
+          <h2>Avaliações do Curso</h2>
+          <div className="reviews-summary">
+            <span className="reviews-avg-star">★ {curso?.mediaAvaliacoes ? curso.mediaAvaliacoes.toFixed(1) : '0.0'}</span>
+            <span className="reviews-count">({curso?.totalAvaliacoes || 0} avaliações)</span>
+          </div>
+        </div>
+
+        {usuario && !podeGerenciar ? (
+          <form className="review-form" onSubmit={handleReviewSubmit}>
+            <h3>Sua avaliação</h3>
+            <div className="star-rating">
+              {[1, 2, 3, 4, 5].map(star => (
+                <button
+                  type="button"
+                  key={star}
+                  className={`star-btn ${(hoverStar || reviewForm.nota) >= star ? 'star-active' : ''}`}
+                  onClick={() => setReviewForm(prev => ({ ...prev, nota: star }))}
+                  onMouseEnter={() => setHoverStar(star)}
+                  onMouseLeave={() => setHoverStar(0)}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+            <textarea
+              placeholder="O que você achou do curso? (opcional)"
+              value={reviewForm.texto}
+              onChange={e => setReviewForm(prev => ({ ...prev, texto: e.target.value }))}
+              rows="3"
+            />
+            <button type="submit" className="btn-primary btn-submit-review">
+              Salvar Avaliação
+            </button>
+          </form>
+        ) : !usuario ? (
+          <p className="review-login-msg">Faça login para avaliar este curso.</p>
+        ) : null}
+
+        <div className="reviews-list">
+          {reviewsStatus === 'loading' && <p>Carregando avaliações...</p>}
+          {reviewsStatus === 'succeeded' && reviews.length === 0 && (
+            <p className="no-reviews">Este curso ainda não tem avaliações. Seja o primeiro a avaliar!</p>
+          )}
+          {reviews.map(review => (
+            <div key={review.id} className="review-card">
+              <div className="review-card-header">
+                <span className="review-user">{review.userName}</span>
+                <span className="review-date">
+                  {new Date(review.criadoEm).toLocaleDateString('pt-BR')}
+                </span>
+              </div>
+              <div className="review-stars">
+                {'★'.repeat(review.nota)}{'☆'.repeat(5 - review.nota)}
+              </div>
+              {review.texto && <p className="review-text">{review.texto}</p>}
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Modal de progresso — aparece quando o usuário clica num card de módulo */}
       {modalModulo && (
         <Modal onClose={() => setModalModulo(null)}>
@@ -257,10 +392,10 @@ export default function ModulosCurso() {
           {/* Cabeçalho do modal: nome do módulo + badge de status */}
           <div className="compt-modal-header">
             <h3>{modalModulo.titulo}</h3>
-            <span className={`modal-status-label modal-status--${modalModulo.status}`}>
-              {modalModulo.status === 'locked'
+            <span className={`modal-status-label modal-status--${progressoDosModulos[modalModulo.id] || 'locked'}`}>
+              {(progressoDosModulos[modalModulo.id] || 'locked') === 'locked'
                 ? 'Não iniciado'
-                : modalModulo.status === 'in-progress'
+                : progressoDosModulos[modalModulo.id] === 'in-progress'
                 ? 'Em andamento'
                 : 'Concluído'}
             </span>
@@ -268,10 +403,7 @@ export default function ModulosCurso() {
 
           <p className="compt-modal-sub">Gerencie seu progresso neste módulo.</p>
 
-          {/* Link de referência do módulo — só aparece se tiver sido informado.
-              target="_blank" abre em nova aba para não sair do app.
-              rel="noopener noreferrer" é uma boa prática de segurança: impede
-              que a página aberta acesse/manipule a aba original. */}
+          {/* Link de referência do módulo */}
           {modalModulo.link && (
             <a
               href={modalModulo.link}
@@ -287,21 +419,21 @@ export default function ModulosCurso() {
           <div className="compt-modal-actions">
 
             {/* Módulo ainda não iniciado → botão para iniciar */}
-            {modalModulo.status === 'locked' && (
+            {(progressoDosModulos[modalModulo.id] || 'locked') === 'locked' && (
               <button className="btn-primary" onClick={() => handleAcao(modalModulo, 'in-progress')}>
                 ▶ Iniciar módulo
               </button>
             )}
 
             {/* Módulo em andamento → botão para marcar como concluído */}
-            {modalModulo.status === 'in-progress' && (
+            {progressoDosModulos[modalModulo.id] === 'in-progress' && (
               <button className="btn-primary" onClick={() => handleAcao(modalModulo, 'completed')}>
                 ✓ Marcar como concluído
               </button>
             )}
 
             {/* Módulo já concluído → mensagem e botão para desfazer */}
-            {modalModulo.status === 'completed' && (
+            {progressoDosModulos[modalModulo.id] === 'completed' && (
               <>
                 <p className="mod-done-msg">✓ Módulo concluído!</p>
                 <button className="btn-secondary" style={{ borderColor: 'var(--error)', color: 'var(--error)' }} onClick={() => handleAcao(modalModulo, 'in-progress')}>

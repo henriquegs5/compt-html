@@ -11,6 +11,7 @@ const API = 'http://localhost:3001'
 // ============================================================
 const cursosAdapter  = createEntityAdapter()
 const modulosAdapter = createEntityAdapter()
+const reviewsAdapter = createEntityAdapter()
 
 // ---- Thunks ----
 
@@ -21,7 +22,11 @@ const modulosAdapter = createEntityAdapter()
  * @returns {Promise<Array>} Array com todos os cursos cadastrados
  */
 export const fetchCursos = createAsyncThunk('cursos/fetchCursos', async (_, { rejectWithValue }) => {
-  const res = await fetch(`${API}/cursos`)
+  const sessao = JSON.parse(localStorage.getItem('compt_session'));
+  const token = sessao ? sessao.token : '';
+  const res = await fetch(`${API}/cursos`, {
+    headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) }
+  })
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: 'Erro ao carregar cursos' }))
     return rejectWithValue(err.error || 'Erro ao carregar cursos')
@@ -63,18 +68,42 @@ export const fetchModulosDoCurso = createAsyncThunk(
  */
 export const setModuloStatusCurso = createAsyncThunk(
   'cursos/setModuloStatusCurso',
-  async ({ id, status }) => {
+  async ({ id, status, cursoId }) => {
     const sessao = JSON.parse(localStorage.getItem('compt_session'));
     const token = sessao ? sessao.token : '';
-    await fetch(`${API}/modulos/${id}`, {
-      method: 'PATCH',
+    await fetch(`${API}/modulos/${id}/progresso`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ status }),  // manda só o campo que mudou
+      body: JSON.stringify({ status, cursoId }),
     })
-    return { id, status }  // devolve o id e novo status para atualizar o estado local
+    return { id, status }  // devolve o id (do modulo) e novo status para atualizar o estado local
+  }
+)
+
+export const fetchProgressoDoCurso = createAsyncThunk(
+  'cursos/fetchProgressoDoCurso',
+  async (cursoId) => {
+    const sessao = JSON.parse(localStorage.getItem('compt_session'));
+    const token = sessao ? sessao.token : '';
+    const res = await fetch(`${API}/modulos/curso/${cursoId}/progresso`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return await res.json();
+  }
+)
+
+export const fetchProgressoGeral = createAsyncThunk(
+  'cursos/fetchProgressoGeral',
+  async () => {
+    const sessao = JSON.parse(localStorage.getItem('compt_session'));
+    const token = sessao ? sessao.token : '';
+    const res = await fetch(`${API}/modulos/meus-progressos`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return await res.json();
   }
 )
 
@@ -91,13 +120,16 @@ export const setModuloStatusCurso = createAsyncThunk(
  */
 export const adicionarCurso = createAsyncThunk(
   'cursos/adicionarCurso',
-  async ({ titulo, descricao, imagem }) => {
+  async ({ titulo, descricao, imagem, pago, preco, horas }) => {
     // Monta o objeto inicial a ser enviado para a API
     const novoCurso = {
       id: String(Date.now()),
       titulo,
       descricao,
       imagem: imagem || 'default.jpg',
+      pago: pago || false,
+      preco: preco || 0,
+      horas: horas || 0
     }
 
     const sessao = JSON.parse(localStorage.getItem('compt_session'));
@@ -130,11 +162,14 @@ export const adicionarCurso = createAsyncThunk(
  */
 export const editarCurso = createAsyncThunk(
   'cursos/editarCurso',
-  async ({ id, titulo, descricao, imagem }) => {
+  async ({ id, titulo, descricao, imagem, pago, preco, horas }) => {
     const dadosAtualizados = {
       titulo,
       descricao,
       imagem: imagem || 'default.jpg',
+      pago,
+      preco,
+      horas
     }
 
     const sessao = JSON.parse(localStorage.getItem('compt_session'));
@@ -235,6 +270,69 @@ export const excluirModulo = createAsyncThunk(
   }
 )
 
+export const fetchCursosMatriculados = createAsyncThunk(
+  'cursos/fetchCursosMatriculados',
+  async () => {
+    const sessao = JSON.parse(localStorage.getItem('compt_session'));
+    const token = sessao ? sessao.token : '';
+    const res = await fetch(`${API}/cursos/matriculados`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return await res.json();
+  }
+)
+
+export const matricularCurso = createAsyncThunk(
+  'cursos/matricularCurso',
+  async (cursoId) => {
+    const sessao = JSON.parse(localStorage.getItem('compt_session'));
+    const token = sessao ? sessao.token : '';
+    await fetch(`${API}/cursos/${cursoId}/matricula`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return cursoId;
+  }
+)
+
+export const desmatricularCurso = createAsyncThunk(
+  'cursos/desmatricularCurso',
+  async (cursoId) => {
+    const sessao = JSON.parse(localStorage.getItem('compt_session'));
+    const token = sessao ? sessao.token : '';
+    await fetch(`${API}/cursos/${cursoId}/matricula`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return cursoId;
+  }
+)
+
+export const fetchReviews = createAsyncThunk(
+  'cursos/fetchReviews',
+  async (cursoId) => {
+    const res = await fetch(`${API}/cursos/${cursoId}/reviews`);
+    return await res.json();
+  }
+)
+
+export const enviarReview = createAsyncThunk(
+  'cursos/enviarReview',
+  async ({ cursoId, nota, texto }) => {
+    const sessao = JSON.parse(localStorage.getItem('compt_session'));
+    const token = sessao ? sessao.token : '';
+    const res = await fetch(`${API}/cursos/${cursoId}/reviews`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ nota, texto })
+    });
+    return await res.json();
+  }
+)
+
 // ============================================================
 // Slice
 // initialState usa getInitialState() do adapter, que cria:
@@ -248,11 +346,24 @@ const cursosSlice = createSlice({
   initialState: cursosAdapter.getInitialState({
     status: 'idle',      // status da requisição de cursos: idle | loading | succeeded | failed
     erro: null,          // guarda mensagem de erro se algo falhar
+    matriculados: [],
+    matriculadosStatus: 'idle',
 
     // Sub-estado dos módulos do curso atualmente aberto (também normalizado)
     modulosDosCurso: modulosAdapter.getInitialState({
       status: 'idle',    // status da requisição de módulos
     }),
+    
+    // Dicionário de progresso: { "moduloId": "status" }
+    progressoDosModulos: {},
+
+    // Array com todos os progressos do usuário
+    progressoGeral: [],
+    progressoGeralStatus: 'idle',
+
+    reviews: reviewsAdapter.getInitialState({
+      status: 'idle',
+    })
   }),
 
   reducers: {
@@ -262,6 +373,7 @@ const cursosSlice = createSlice({
     limparModulosCurso(state) {
       modulosAdapter.removeAll(state.modulosDosCurso)
       state.modulosDosCurso.status = 'idle'
+      state.progressoDosModulos = {}
     },
   },
 
@@ -293,13 +405,27 @@ const cursosSlice = createSlice({
         state.erro = action.error.message
       })
 
-      // --- Atualizar status do módulo ---
-      // Quando o PATCH confirma, atualiza o estado local sem precisar
-      // fazer uma nova requisição GET (optimistic update local)
+      // --- Atualizar status do módulo (progresso) ---
+      // Atualiza apenas no dicionário de progresso local
       .addCase(setModuloStatusCurso.fulfilled, (state, action) => {
         const { id, status } = action.payload
-        // updateOne recebe { id, changes } — só muda os campos indicados
-        modulosAdapter.updateOne(state.modulosDosCurso, { id, changes: { status } })
+        state.progressoDosModulos[id] = status
+      })
+
+      // --- Buscar Progresso ---
+      .addCase(fetchProgressoDoCurso.fulfilled, (state, action) => {
+        const map = {}
+        action.payload.forEach(p => {
+          map[p.moduloId] = p.status
+        })
+        state.progressoDosModulos = map
+      })
+
+      // --- Buscar Progresso Geral ---
+      .addCase(fetchProgressoGeral.pending, (state) => { state.progressoGeralStatus = 'loading' })
+      .addCase(fetchProgressoGeral.fulfilled, (state, action) => {
+        state.progressoGeralStatus = 'succeeded'
+        state.progressoGeral = action.payload
       })
 
       // --- Adicionar curso ---
@@ -334,6 +460,39 @@ const cursosSlice = createSlice({
       .addCase(excluirModulo.fulfilled, (state, action) => {
         modulosAdapter.removeOne(state.modulosDosCurso, action.payload)
       })
+
+      // --- Matriculados ---
+      .addCase(fetchCursosMatriculados.pending, (state) => { state.matriculadosStatus = 'loading' })
+      .addCase(fetchCursosMatriculados.fulfilled, (state, action) => {
+        state.matriculadosStatus = 'succeeded'
+        state.matriculados = action.payload
+      })
+      .addCase(matricularCurso.fulfilled, (state, action) => {
+        if (!state.matriculados.includes(action.payload)) {
+          state.matriculados.push(action.payload)
+        }
+      })
+      .addCase(desmatricularCurso.fulfilled, (state, action) => {
+        state.matriculados = state.matriculados.filter(id => id !== action.payload)
+      })
+
+      // --- Reviews ---
+      .addCase(fetchReviews.pending, (state) => { state.reviews.status = 'loading' })
+      .addCase(fetchReviews.fulfilled, (state, action) => {
+        state.reviews.status = 'succeeded'
+        reviewsAdapter.setAll(state.reviews, action.payload)
+      })
+      .addCase(enviarReview.fulfilled, (state, action) => {
+        reviewsAdapter.upsertOne(state.reviews, action.payload)
+      })
+      // --- Logout ---
+      .addCase('auth/fazerLogout', (state) => {
+        state.matriculados = []
+        state.matriculadosStatus = 'idle'
+        state.progressoDosModulos = {}
+        state.progressoGeral = []
+        state.progressoGeralStatus = 'idle'
+      })
   },
 })
 
@@ -360,3 +519,7 @@ export const {
   selectById:  selectModuloDoCursoById,   // retorna um módulo pelo id
   selectTotal: selectTotalModulosDoCurso, // retorna a quantidade de módulos
 } = modulosAdapter.getSelectors((state) => state.cursos.modulosDosCurso)
+
+export const {
+  selectAll: selectAllReviews
+} = reviewsAdapter.getSelectors((state) => state.cursos.reviews)

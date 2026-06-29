@@ -47,7 +47,6 @@ export default function Perfil() {
   const [editando, setEditando] = useState(false)
 
   // Campos do formulário de edição
-  const [nome,  setNome]  = useState('')
   const [bio,   setBio]   = useState('')
   // ranks: cópia local do array de ranks para edição no modal
   const [ranks, setRanks] = useState([])
@@ -60,7 +59,6 @@ export default function Perfil() {
 
   // Abre o modal de edição com os dados atuais pré-preenchidos
   function abrirEdicao() {
-    setNome(usuario?.name ?? '')
     setBio(dados?.bio ?? '')
     // Copia o array de ranks para não mutar o estado Redux diretamente
     setRanks(dados?.ranks?.map(r => ({ ...r })) ?? [])
