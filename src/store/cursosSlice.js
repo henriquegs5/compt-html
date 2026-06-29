@@ -142,7 +142,12 @@ export const adicionarCurso = createAsyncThunk(
       body: JSON.stringify(novoCurso),
     })
 
-    return await res.json()
+    const data = await res.json()
+    // Sem essa checagem, um erro do backend (ex: 403) viraria o payload do
+    // thunk e o reducer tentaria atualizar com um objeto sem id — falhando em
+    // silêncio. Lançamos o erro para o componente poder avisar o usuário.
+    if (!res.ok) throw new Error(data.error || 'Erro ao criar curso')
+    return data
   }
 )
 
@@ -182,7 +187,11 @@ export const editarCurso = createAsyncThunk(
       body: JSON.stringify(dadosAtualizados),
     })
 
-    return await res.json()
+    const data = await res.json()
+    // Se o backend recusar (ex: 403), o payload viria sem id e o updateOne não
+    // faria nada — a edição falharia em silêncio. Lançamos para avisar o usuário.
+    if (!res.ok) throw new Error(data.error || 'Erro ao editar curso')
+    return data
   }
 )
 

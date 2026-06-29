@@ -147,7 +147,7 @@ export default function Cursos() {
    * @function handleSubmit
    * @param {React.FormEvent} e - O evento de submissão do formulário
    */
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
 
     if (!novoCurso.titulo.trim() || !novoCurso.descricao.trim()) {
@@ -155,13 +155,18 @@ export default function Cursos() {
       return
     }
 
-    if (cursoEditandoId) {
-      dispatch(editarCurso({ id: cursoEditandoId, ...novoCurso }))
-    } else {
-      dispatch(adicionarCurso(novoCurso))
+    try {
+      // unwrap() faz o thunk relançar o erro aqui caso o backend recuse,
+      // permitindo avisar o usuário em vez de fechar o modal silenciosamente.
+      if (cursoEditandoId) {
+        await dispatch(editarCurso({ id: cursoEditandoId, ...novoCurso })).unwrap()
+      } else {
+        await dispatch(adicionarCurso(novoCurso)).unwrap()
+      }
+      setModalAberto(false)
+    } catch (err) {
+      alert(`Não foi possível salvar o curso: ${err.message || err}`)
     }
-
-    setModalAberto(false)
   }
 
   /**
@@ -217,8 +222,9 @@ export default function Cursos() {
         )}
         {cursosFiltrados.map(curso => {
           const podeEditarCurso = usuario && (
-            curso.criadorId === usuario.id || 
-            (!curso.criadorId && usuario.role === 'admin')
+            usuario.role === 'admin' ||                  // admin edita qualquer curso
+            curso.criadorId === usuario.id ||            // criador edita o próprio
+            (!curso.criadorId && podeAdicionar)          // curso sem criador: admin/mod
           );
 
           return (
@@ -227,6 +233,10 @@ export default function Cursos() {
               <img
                 src={srcImagemCurso(curso.imagem)}
                 alt={curso.titulo}
+                // onLoad reexibe a imagem caso ela tenha sido escondida antes:
+                // sem isso, um curso sem capa que ganha uma imagem só apareceria
+                // após F5, pois o display:none setado no onError ficava no DOM.
+                onLoad={e => e.target.style.display = ''}
                 onError={e => e.target.style.display = 'none'}
               />
               <div className="curso-overlay" />

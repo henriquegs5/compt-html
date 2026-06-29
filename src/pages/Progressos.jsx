@@ -78,7 +78,7 @@ export default function Progressos() {
               return (
                 <div key={curso.id} className="course-progress-card" onClick={() => navigate(`/cursos/${curso.id}`)}>
                   <div className="cp-image">
-                    <img src={srcImagemCurso(curso.imagem)} alt={curso.titulo} onError={e => e.target.style.display='none'} />
+                    <img src={srcImagemCurso(curso.imagem)} alt={curso.titulo} onLoad={e => e.target.style.display=''} onError={e => e.target.style.display='none'} />
                   </div>
                   <div className="cp-content">
                     <h4>{curso.titulo}</h4>

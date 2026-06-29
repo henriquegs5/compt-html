@@ -112,8 +112,9 @@ router.patch('/:id', passport.authenticate('jwt', { session: false }), requireAd
     const cursoAtual = await Curso.findById(req.params.id);
     if (!cursoAtual) return res.status(404).json({ error: 'Curso não encontrado' });
     
-    // Verifica se o usuário é o criador do curso ou se o curso não tem criador (retrocompatibilidade)
-    if (cursoAtual.criadorId && cursoAtual.criadorId !== req.user.id) {
+    // Admin pode editar qualquer curso. Os demais (ex: moderador) só podem
+    // editar cursos que criaram, ou cursos sem criador (retrocompatibilidade).
+    if (req.user.role !== 'admin' && cursoAtual.criadorId && cursoAtual.criadorId !== req.user.id) {
       return res.status(403).json({ error: 'Acesso negado: Apenas o criador do curso pode modificá-lo.' });
     }
 
@@ -134,7 +135,8 @@ router.delete('/:id', passport.authenticate('jwt', { session: false }), requireA
     const cursoAtual = await Curso.findById(req.params.id);
     if (!cursoAtual) return res.status(404).json({ error: 'Curso não encontrado' });
 
-    if (cursoAtual.criadorId && cursoAtual.criadorId !== req.user.id) {
+    // Admin pode excluir qualquer curso; os demais só os que criaram (ou sem criador).
+    if (req.user.role !== 'admin' && cursoAtual.criadorId && cursoAtual.criadorId !== req.user.id) {
       return res.status(403).json({ error: 'Acesso negado: Apenas o criador do curso pode excluí-lo.' });
     }
 

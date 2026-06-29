@@ -71,8 +71,9 @@ export default function ModulosCurso() {
   const usuario = useSelector(s => s.auth.usuario)
   const isAdMod = usuario?.role === 'admin' || usuario?.role === 'moderador'
   const podeGerenciar = usuario && curso && (
-    curso.criadorId === usuario.id || 
-    (!curso.criadorId && usuario.role === 'admin')
+    usuario.role === 'admin' ||                  // admin gerencia qualquer curso
+    curso.criadorId === usuario.id ||            // criador gerencia o próprio
+    (!curso.criadorId && isAdMod)                // curso sem criador: admin/mod
   );
 
   // Estado local para controlar qual módulo está sendo exibido no modal de progresso
