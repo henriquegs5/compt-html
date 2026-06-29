@@ -42,6 +42,8 @@ export default function Cursos() {
   const [modalAberto, setModalAberto] = useState(false)
   const [cursoEditandoId, setCursoEditandoId] = useState(null)
   const [termoPesquisa, setTermoPesquisa] = useState('')
+  // id do curso recém-matriculado — abre o modal "ir para o curso?" quando definido
+  const [cursoMatriculadoId, setCursoMatriculadoId] = useState(null)
   const [novoCurso, setNovoCurso] = useState({
     titulo: '',
     descricao: '',
@@ -58,6 +60,8 @@ export default function Cursos() {
 
   const cursosPorAba = items.filter(curso => {
     const isMatriculado = matriculados.includes(curso.id)
+    // "Meus Cursos" = cursos que o usuário está acompanhando (matriculado).
+    // Cursos que ele criou continuam aparecendo em "Disponíveis".
     if (activeTab === 'matriculados') return isMatriculado
     return !isMatriculado
   })
@@ -170,6 +174,26 @@ export default function Cursos() {
   }
 
   /**
+   * Matricula o usuário no curso e, em caso de sucesso, abre o modal
+   * perguntando se ele quer ir para o curso ou continuar navegando.
+   * @function handleMatricular
+   * @param {string} cursoId - ID do curso
+   */
+  async function handleMatricular(cursoId) {
+    if (!usuario) {
+      alert('Você precisa fazer login para se matricular.')
+      navigate('/login')
+      return
+    }
+    try {
+      await dispatch(matricularCurso(cursoId)).unwrap()
+      setCursoMatriculadoId(cursoId)
+    } catch (err) {
+      alert(`Não foi possível matricular: ${err.message || err}`)
+    }
+  }
+
+  /**
    * Confirma e despacha a ação para excluir um curso existente.
    * @function handleExcluir
    */
@@ -240,6 +264,13 @@ export default function Cursos() {
                 onError={e => e.target.style.display = 'none'}
               />
               <div className="curso-overlay" />
+
+              {/* Símbolo de criador: aparece quando o curso foi criado por você */}
+              {usuario && curso.criadorId === usuario.id && (
+                <span className="curso-criador-badge" title="Você é o criador deste curso">
+                  👑 Criador
+                </span>
+              )}
             </div>
 
             {podeEditarCurso && (
@@ -312,14 +343,7 @@ export default function Cursos() {
                 ) : (
                   <button
                     className="btn-abrir-curso btn-matricular-curso"
-                    onClick={() => {
-                      if (!usuario) {
-                        alert('Você precisa fazer login para se matricular.')
-                        navigate('/login')
-                      } else {
-                        dispatch(matricularCurso(curso.id))
-                      }
-                    }}
+                    onClick={() => handleMatricular(curso.id)}
                   >
                     Matricular
                   </button>
@@ -472,6 +496,35 @@ export default function Cursos() {
               </button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {/* Modal pós-matrícula: pergunta se o usuário quer ir direto ao curso
+          ou continuar navegando pela lista. */}
+      {cursoMatriculadoId && (
+        <Modal onClose={() => setCursoMatriculadoId(null)}>
+          <h2 className="modal-titulo">Matrícula confirmada! 🎉</h2>
+          <p style={{ marginBottom: '1.5rem' }}>
+            Você se matriculou no curso. O que deseja fazer agora?
+          </p>
+          <div className="compt-modal-actions">
+            <button
+              className="btn-primary"
+              onClick={() => {
+                const id = cursoMatriculadoId
+                setCursoMatriculadoId(null)
+                navigate(`/cursos/${id}`)
+              }}
+            >
+              Ir para o curso
+            </button>
+            <button
+              className="btn-secondary"
+              onClick={() => setCursoMatriculadoId(null)}
+            >
+              Continuar vendo os cursos
+            </button>
+          </div>
         </Modal>
       )}
     </Layout>

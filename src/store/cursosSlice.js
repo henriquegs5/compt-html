@@ -443,7 +443,15 @@ const cursosSlice = createSlice({
 
       // --- Editar curso ---
       .addCase(editarCurso.fulfilled, (state, action) => {
-        const { id, ...changes } = action.payload
+        // A rota PATCH devolve o documento cru do curso, cujo totalModulos/
+        // avaliações ficam com o valor guardado (0). Esses campos são calculados
+        // dinamicamente no GET /cursos, então os removemos do update para não
+        // sobrescrever a contagem real que já está no estado.
+        const {
+          id,
+          totalModulos, totalAvaliacoes, mediaAvaliacoes, rascunho,
+          ...changes
+        } = action.payload
         cursosAdapter.updateOne(state, { id, changes })
       })
 
