@@ -106,6 +106,7 @@ export const fetchProgressoGeral = createAsyncThunk(
     return await res.json();
   }
 )
+/**
  * Adiciona um novo curso ao banco de dados.
  * @async
  * @function adicionarCurso
