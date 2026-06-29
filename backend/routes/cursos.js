@@ -120,7 +120,7 @@ router.patch('/:id', passport.authenticate('jwt', { session: false }), requireAd
     const cursoAtualizado = await Curso.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
     res.json(cursoAtualizado);
   } catch (error) {
@@ -206,7 +206,7 @@ router.post('/:id/reviews', passport.authenticate('jwt', { session: false }), as
         texto: texto || '', 
         userName: req.user.name 
       },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
+      { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true }
     );
     
     res.json(review);

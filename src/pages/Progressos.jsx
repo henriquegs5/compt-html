@@ -8,6 +8,7 @@ import {
   selectAllCursos 
 } from '../store/cursosSlice'
 import Layout from '../components/Layout'
+import { srcImagemCurso } from '../utils/imagemCurso'
 import './Progressos.css'
 
 export default function Progressos() {
@@ -77,7 +78,7 @@ export default function Progressos() {
               return (
                 <div key={curso.id} className="course-progress-card" onClick={() => navigate(`/cursos/${curso.id}`)}>
                   <div className="cp-image">
-                    <img src={`/img/${curso.imagem}`} alt={curso.titulo} onError={e => e.target.style.display='none'} />
+                    <img src={srcImagemCurso(curso.imagem)} alt={curso.titulo} onError={e => e.target.style.display='none'} />
                   </div>
                   <div className="cp-content">
                     <h4>{curso.titulo}</h4>

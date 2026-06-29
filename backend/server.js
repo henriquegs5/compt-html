@@ -31,7 +31,9 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/compt';
 
 // Middlewares
 app.use(cors());
-app.use(express.json());
+// Limite maior que o padrão (100kb) porque o avatar enviado pelo usuário
+// chega como imagem em base64 (data URL), que ocupa bastante espaço no corpo.
+app.use(express.json({ limit: '5mb' }));
 app.use(passport.initialize());
 passportConfig(passport);
 

@@ -80,6 +80,33 @@ router.get('/me', passport.authenticate('jwt', { session: false }), async (req, 
     res.status(500).json({ error: err.message });
   }
 });
+// PATCH /auth/me - Atualiza os dados do próprio perfil (bio, ranks e avatar)
+// Só permite editar campos seguros: nunca deixamos o usuário mudar role, email,
+// senha, etc. por aqui. Por isso montamos um objeto "updates" apenas com os
+// campos permitidos que vieram no corpo da requisição.
+router.patch('/me', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  try {
+    const { bio, ranks, avatarUrl } = req.body;
+
+    const updates = {};
+    if (bio !== undefined) updates.bio = bio;
+    if (ranks !== undefined) updates.ranks = ranks;
+    if (avatarUrl !== undefined) updates.avatarUrl = avatarUrl;
+
+    // returnDocument: 'after' faz o Mongoose retornar o documento já atualizado
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $set: updates },
+      { returnDocument: 'after', runValidators: true }
+    ).select('-password');
+
+    if (!user) return res.status(404).json({ error: 'Usuário não encontrado.' });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 const requireAdminOrMod = (req, res, next) => {
   if (req.user && (req.user.role === 'admin' || req.user.role === 'moderador')) {
     return next();
@@ -135,7 +162,7 @@ router.patch(
       const updated = await User.findByIdAndUpdate(
         req.params.id,
         { $set: { role: novoRole } },
-        { new: true }
+        { returnDocument: 'after' }
       );
       res.json(updated);
     } catch (err) {

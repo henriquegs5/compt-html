@@ -57,3 +57,37 @@
 .profile-stat:last-child { border-right: none; }
 .profile-stat p      { font-size: .8rem; color: var(--text-muted); margin-bottom: .3rem; }
 .profile-stat strong { font-size: 1rem; font-weight: 600; }
+
+/* ---- Upload de avatar no modal de edição ---- */
+.avatar-upload {
+  display: flex; align-items: center; gap: 1rem;
+}
+
+/* Prévia da imagem que será salva — redonda, igual ao avatar do perfil */
+.avatar-preview {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+}
+
+.avatar-upload-actions {
+  display: flex; flex-direction: column; gap: .4rem;
+}
+
+/* A <label> faz papel de botão para abrir o seletor de arquivos */
+.avatar-upload-btn {
+  cursor: pointer;
+  text-align: center;
+  display: inline-block;
+}
+
+.avatar-remove-btn {
+  background: none;
+  border: none;
+  color: #c0392b;
+  font-size: .8rem;
+  cursor: pointer;
+  padding: 0;
+}

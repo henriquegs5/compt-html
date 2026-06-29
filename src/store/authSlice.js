@@ -155,6 +155,20 @@ const authSlice = createSlice({
       })
       // Se falhar (401 ou sem token), o dispatch(fazerLogout()) dentro do thunk
       // já cuida de limpar o estado — não precisamos fazer nada extra aqui.
+
+      // Quando o perfil é salvo (bio/ranks/avatar), refletimos as mudanças no
+      // usuário logado também — assim o avatar e o nome na navbar atualizam na
+      // hora, sem precisar recarregar a página. Usamos o tipo da action por
+      // string para não importar o thunk do perfilSlice (evita import circular).
+      .addMatcher(
+        (action) => action.type === 'perfil/atualizarPerfilBackend/fulfilled',
+        (state, action) => {
+          if (state.usuario) {
+            state.usuario = { ...state.usuario, ...action.payload }
+            localStorage.setItem('compt_session', JSON.stringify(state.usuario))
+          }
+        }
+      )
   },
 })
 

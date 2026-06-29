@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { fetchCursos, matricularCurso, selectAllCursos } from '../store/cursosSlice'
 import Layout from '../components/Layout'
 import Toast from '../components/Toast'
+import { srcImagemCurso } from '../utils/imagemCurso'
 import './Pagamento.css'
 
 export default function Pagamento() {
@@ -73,7 +74,7 @@ export default function Pagamento() {
           <div className="pagamento-info">
             <h2>Resumo do Pedido</h2>
             <div className="pgto-curso-card">
-              <img src={`/img/${curso.imagem}`} alt={curso.titulo} />
+              <img src={srcImagemCurso(curso.imagem)} alt={curso.titulo} />
               <div>
                 <h3>{curso.titulo}</h3>
                 <p className="pgto-price">R$ {curso.preco.toFixed(2)}</p>

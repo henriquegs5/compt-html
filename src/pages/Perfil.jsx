@@ -50,6 +50,9 @@ export default function Perfil() {
   const [bio,   setBio]   = useState('')
   // ranks: cópia local do array de ranks para edição no modal
   const [ranks, setRanks] = useState([])
+  // avatar: imagem escolhida pelo usuário, guardada como data URL (base64).
+  // Começa com o avatar atual e só muda se o usuário importar uma nova imagem.
+  const [avatar, setAvatar] = useState('')
 
   // ---------- estado do modal de exclusão ----------
   const [confirmandoDelete, setConfirmandoDelete] = useState(false)
@@ -57,12 +60,41 @@ export default function Perfil() {
   // ---------- toast ----------
   const [toast, setToast] = useState(null)
 
+  // Avatar exibido no card: imagem importada pelo usuário (avatarUrl) ou,
+  // se ele ainda não escolheu nenhuma, um avatar gerado a partir do uid.
+  const avatarAtual = dados?.avatarUrl || `https://i.pravatar.cc/80?u=${usuario?.uid}`
+
   // Abre o modal de edição com os dados atuais pré-preenchidos
   function abrirEdicao() {
     setBio(dados?.bio ?? '')
     // Copia o array de ranks para não mutar o estado Redux diretamente
     setRanks(dados?.ranks?.map(r => ({ ...r })) ?? [])
+    setAvatar(dados?.avatarUrl ?? '')
     setEditando(true)
+  }
+
+  // Lê a imagem escolhida no input de arquivo e a converte para data URL
+  // (texto base64), que é o formato que enviamos ao backend e guardamos no
+  // banco. Validamos tipo (precisa ser imagem) e tamanho para não estourar
+  // o limite do corpo da requisição nem o documento no MongoDB.
+  function handleAvatarChange(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setToast('Selecione um arquivo de imagem.')
+      return
+    }
+    // Limite de 2 MB — base64 cresce ~33%, então fica bem abaixo do limite
+    // de 5 MB que configuramos no backend.
+    if (file.size > 2 * 1024 * 1024) {
+      setToast('Imagem muito grande. Escolha uma com até 2 MB.')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => setAvatar(reader.result) // reader.result = data URL
+    reader.readAsDataURL(file)
   }
 
   // Atualiza o rank de um jogo específico enquanto o usuário digita
@@ -71,11 +103,26 @@ export default function Perfil() {
     setRanks(prev => prev.map((r, i) => i === idx ? { ...r, rank: valor } : r))
   }
 
-  // Salva as alterações no Redux
+  // Salva as alterações no Redux. Só mandamos avatarUrl se o usuário escolheu
+  // uma imagem (avatar preenchido) — assim não sobrescrevemos com vazio.
   function salvar() {
-    dispatch(atualizarPerfilBackend({ bio, ranks }))
+    const payload = { bio, ranks }
+    if (avatar) payload.avatarUrl = avatar
+    dispatch(atualizarPerfilBackend(payload))
     setEditando(false)
     setToast('Perfil atualizado com sucesso!')
+  }
+
+  // Remove a foto de perfil do servidor. Mandamos avatarUrl vazio: o backend
+  // grava '' no banco e, como esse valor é "falsy", o display volta a usar o
+  // avatar gerado pelo uid. Só chama o backend se havia uma foto salva; caso
+  // contrário apenas limpa a imagem recém-escolhida no preview.
+  function removerAvatar() {
+    setAvatar('')
+    if (dados?.avatarUrl) {
+      dispatch(atualizarPerfilBackend({ avatarUrl: '' }))
+      setToast('Foto de perfil removida.')
+    }
   }
 
   // Exclui a conta: limpa o perfil, faz logout e redireciona
@@ -96,9 +143,10 @@ export default function Perfil() {
         <div className="profile-banner" />
 
         <div className="profile-header">
-          {/* Avatar: gerado pelo uid do usuário logado — único por conta */}
+          {/* Avatar: imagem importada pelo usuário, ou gerada pelo uid se ele
+              ainda não escolheu nenhuma */}
           <img
-            src={`https://i.pravatar.cc/80?u=${usuario?.uid}`}
+            src={avatarAtual}
             className="profile-avatar"
             alt="avatar"
           />
@@ -140,6 +188,42 @@ export default function Perfil() {
       {editando && (
         <Modal onClose={() => setEditando(false)}>
           <h3 style={{ marginBottom: '1.2rem' }}>Editar Perfil</h3>
+
+          {/* Campo: foto de perfil — preview da imagem + botão de importar */}
+          <div className="compt-modal-field">
+            <label>Foto de perfil</label>
+            <div className="avatar-upload">
+              <img
+                src={avatar || avatarAtual}
+                className="avatar-preview"
+                alt="prévia do avatar"
+              />
+              <div className="avatar-upload-actions">
+                {/* O input de arquivo nativo é feio; escondemos ele e usamos a
+                    própria <label> como botão estilizado para abrir o seletor */}
+                <label className="btn-secondary avatar-upload-btn">
+                  Importar imagem
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    hidden
+                  />
+                </label>
+                {/* Remove a foto (do servidor, se já estiver salva) e volta ao
+                    avatar gerado automaticamente */}
+                {(avatar || dados?.avatarUrl) && (
+                  <button
+                    type="button"
+                    className="avatar-remove-btn"
+                    onClick={removerAvatar}
+                  >
+                    Remover
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
 
           {/* Campo: bio */}
           <div className="compt-modal-field">

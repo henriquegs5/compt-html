@@ -48,7 +48,7 @@ export default function Layout({ children }) {
           <span className="username">{usuario?.name ?? 'Usuário'}</span>
           <img
             className="avatar"
-            src={`https://i.pravatar.cc/40?u=${usuario?.uid ?? 'default'}`}
+            src={usuario?.avatarUrl || `https://i.pravatar.cc/40?u=${usuario?.uid ?? 'default'}`}
             alt="foto do usuário"
           />
           <button className="btn-logout" onClick={handleLogout} title="Sair">⏻</button>

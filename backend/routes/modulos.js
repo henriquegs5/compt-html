@@ -110,7 +110,7 @@ router.patch('/:id', passport.authenticate('jwt', { session: false }), requireAd
     const moduloAtualizado = await Modulo.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
     if (!moduloAtualizado) return res.status(404).json({ error: 'Módulo não encontrado' });
     res.json(moduloAtualizado);
@@ -160,7 +160,7 @@ router.post('/:id/progresso', passport.authenticate('jwt', { session: false }), 
         cursoId,
         atualizadoEm: Date.now() 
       },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
+      { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true }
     );
     
     res.json(progresso);

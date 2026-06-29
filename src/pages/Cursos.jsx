@@ -13,6 +13,7 @@ import {
 } from '../store/cursosSlice'
 import Layout from '../components/Layout'
 import Modal from '../components/Modal'
+import { IMAGENS_CURSO, srcImagemCurso } from '../utils/imagemCurso'
 import './Cursos.css'
 import './Cursos-extras.css'
 
@@ -101,10 +102,44 @@ export default function Cursos() {
    */
   function handleChange(e) {
     const { name, value, type, checked } = e.target
-    setNovoCurso(prev => ({ 
-      ...prev, 
-      [name]: type === 'checkbox' ? checked : value 
+    setNovoCurso(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
     }))
+  }
+
+  /**
+   * Seleciona uma das imagens prontas (arquivo de /public/img) como capa.
+   * @function selecionarImagem
+   * @param {string} arquivo - Nome do arquivo (ex: "lol.jpg")
+   */
+  function selecionarImagem(arquivo) {
+    setNovoCurso(prev => ({ ...prev, imagem: arquivo }))
+  }
+
+  /**
+   * Lê a imagem importada do computador e a guarda em base64 (data URL) no
+   * campo imagem do curso. Valida tipo (imagem) e tamanho (até 2 MB) para não
+   * estourar o limite do corpo da requisição nem o documento no MongoDB.
+   * @function handleImagemUpload
+   * @param {React.ChangeEvent<HTMLInputElement>} e - Evento do input de arquivo
+   */
+  function handleImagemUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      alert('Selecione um arquivo de imagem.')
+      return
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Imagem muito grande. Escolha uma com até 2 MB.')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => setNovoCurso(prev => ({ ...prev, imagem: reader.result }))
+    reader.readAsDataURL(file)
   }
 
   /**
@@ -190,7 +225,7 @@ export default function Cursos() {
           <div className="curso-card" key={curso.id}>
             <div className="curso-image">
               <img
-                src={`/img/${curso.imagem}`}
+                src={srcImagemCurso(curso.imagem)}
                 alt={curso.titulo}
                 onError={e => e.target.style.display = 'none'}
               />
@@ -328,16 +363,38 @@ export default function Cursos() {
               />
             </label>
 
-            <label>
-              Imagem (arquivo em /public/img)
-              <input
-                type="text"
-                name="imagem"
-                value={novoCurso.imagem}
-                onChange={handleChange}
-                placeholder="Ex: valorant.jpg"
-              />
-            </label>
+            <div className="imagem-campo">
+              <span className="imagem-campo-label">Imagem de capa</span>
+              <div className="imagem-picker">
+                {/* Imagens prontas da pasta public/img */}
+                {IMAGENS_CURSO.map(arquivo => (
+                  <button
+                    type="button"
+                    key={arquivo}
+                    className={`imagem-opcao ${novoCurso.imagem === arquivo ? 'imagem-opcao--ativa' : ''}`}
+                    onClick={() => selecionarImagem(arquivo)}
+                    title={arquivo}
+                  >
+                    <img src={`/img/${arquivo}`} alt={arquivo} />
+                  </button>
+                ))}
+
+                {/* Opção de importar uma imagem nova do computador. A própria
+                    label funciona como botão e abre o seletor de arquivos.
+                    Fica destacada quando a imagem escolhida é um upload (data URL). */}
+                <label
+                  className={`imagem-opcao imagem-opcao--upload ${novoCurso.imagem.startsWith('data:') ? 'imagem-opcao--ativa' : ''}`}
+                  title="Importar nova imagem"
+                >
+                  {novoCurso.imagem.startsWith('data:') ? (
+                    <img src={novoCurso.imagem} alt="nova imagem" />
+                  ) : (
+                    <span className="imagem-opcao-novo">+<br />Nova</span>
+                  )}
+                  <input type="file" accept="image/*" hidden onChange={handleImagemUpload} />
+                </label>
+              </div>
+            </div>
 
             <div className="curso-form-row">
               <label className="toggle-label">

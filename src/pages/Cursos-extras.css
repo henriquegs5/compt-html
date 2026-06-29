@@ -124,3 +124,60 @@
   transform: translateX(20px);
   background-color: #0f1117;
 }
+
+/* ---- Seletor de imagem de capa (criar/editar curso) ---- */
+.imagem-campo {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.imagem-campo-label {
+  font-size: .9rem;
+  font-weight: 500;
+}
+
+/* Grade de miniaturas: imagens prontas + quadrado de upload */
+.imagem-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: .6rem;
+}
+
+/* Cada opção é um quadrado clicável; usamos <button> e <label> mas zeramos
+   o visual padrão deles para parecerem cartões de imagem */
+.imagem-opcao {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  padding: 0;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imagem-opcao img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Imagem atualmente selecionada — borda destacada */
+.imagem-opcao--ativa {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+/* Quadrado de "importar nova imagem" quando ainda nada foi importado */
+.imagem-opcao--upload .imagem-opcao-novo {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.2;
+}
