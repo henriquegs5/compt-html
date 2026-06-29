@@ -217,7 +217,7 @@ export const excluirCurso = createAsyncThunk(
 
 export const adicionarModulo = createAsyncThunk(
   'cursos/adicionarModulo',
-  async ({ cursoId, titulo, descricao, imagem, link }) => {
+  async ({ cursoId, titulo, descricao, imagem, link, usarThumbnail }) => {
     const novoModulo = {
       id: String(Date.now()),              // id único baseado no timestamp
       cursoId,                             // vincula o módulo ao curso atual
@@ -225,6 +225,7 @@ export const adicionarModulo = createAsyncThunk(
       descricao,
       imagem: imagem || 'default.jpg',
       link: link || '',
+      usarThumbnail: usarThumbnail || false,
       status: 'locked',                    // todo módulo novo começa bloqueado
     }
     const sessao = JSON.parse(localStorage.getItem('compt_session'));
@@ -243,12 +244,13 @@ export const adicionarModulo = createAsyncThunk(
 
 export const editarModulo = createAsyncThunk(
   'cursos/editarModulo',
-  async ({ id, titulo, descricao, imagem, link }) => {
+  async ({ id, titulo, descricao, imagem, link, usarThumbnail }) => {
     const dadosAtualizados = {
       titulo,
       descricao,
       imagem: imagem || 'default.jpg',
       link: link || '',
+      usarThumbnail: usarThumbnail || false,
     }
     const sessao = JSON.parse(localStorage.getItem('compt_session'));
     const token = sessao ? sessao.token : '';

@@ -32,8 +32,22 @@ import {
 import Layout from '../components/Layout'
 import Modal  from '../components/Modal'
 import Toast  from '../components/Toast'
+import { youtubeEmbedUrl, youtubeThumbnail } from '../utils/youtube'
 import './ModulosCurso.css'
 import './ModulosCurso-extras.css'
+
+// Resolve a imagem de capa de um módulo:
+//  - se "usarThumbnail" estiver marcado e houver vídeo do YouTube, usa a
+//    thumbnail do próprio vídeo
+//  - caso contrário, usa a imagem da pasta /img (escondida pelo onError se
+//    o arquivo não existir)
+function srcImagemModulo(mod) {
+  if (mod.usarThumbnail) {
+    const thumb = youtubeThumbnail(mod.link)
+    if (thumb) return thumb
+  }
+  return `/img/${mod.imagem}`
+}
 
 export default function ModulosCurso() {
   // Pega o :cursoId diretamente da URL (ex: "1", "2", "3"...)
@@ -98,6 +112,7 @@ export default function ModulosCurso() {
     descricao: '',
     imagem: '',
     link: '',
+    usarThumbnail: false,
   })
 
   // ---- Estados para avaliações ----
@@ -178,7 +193,7 @@ export default function ModulosCurso() {
 
   // Abre o modal em modo CRIAÇÃO (sem id preenchido)
   function abrirModalCriar() {
-    setFormModulo({ titulo: '', descricao: '', imagem: '', link: '' })
+    setFormModulo({ titulo: '', descricao: '', imagem: '', link: '', usarThumbnail: false })
     setModuloEditandoId(null)
     setModalFormAberto(true)
   }
@@ -195,6 +210,7 @@ export default function ModulosCurso() {
       // || '' garante que o campo fique vazio se o módulo antigo
       // ainda não tiver o campo link salvo no banco
       link: modulo.link || '',
+      usarThumbnail: modulo.usarThumbnail || false,
     })
     setModuloEditandoId(modulo.id)
     setModalFormAberto(true)
@@ -202,8 +218,8 @@ export default function ModulosCurso() {
 
   // Atualiza o campo correspondente do formulário conforme o usuário digita
   function handleFormChange(e) {
-    const { name, value } = e.target
-    setFormModulo(prev => ({ ...prev, [name]: value }))
+    const { name, value, type, checked } = e.target
+    setFormModulo(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
   }
 
   // Envia o formulário — decide entre criar ou editar pelo moduloEditandoId
@@ -297,8 +313,9 @@ export default function ModulosCurso() {
             {/* Imagem de capa do módulo */}
             <div className="module-image">
               <img
-                src={`/img/${mod.imagem}`}
+                src={srcImagemModulo(mod)}
                 alt={mod.titulo}
+                onLoad={e => e.target.style.display = ''}
                 onError={e => e.target.style.display = 'none'}
               />
             </div>
@@ -411,8 +428,18 @@ export default function ModulosCurso() {
 
           <p className="compt-modal-sub">Gerencie seu progresso neste módulo.</p>
 
-          {/* Link de referência do módulo */}
-          {modalModulo.link && (
+          {/* Se o link for um vídeo do YouTube, toca embutido aqui no modal.
+              Caso seja outro tipo de link (artigo, PDF...), cai no <a> abaixo. */}
+          {youtubeEmbedUrl(modalModulo.link) ? (
+            <div className="modal-video">
+              <iframe
+                src={youtubeEmbedUrl(modalModulo.link)}
+                title={modalModulo.titulo}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : modalModulo.link && (
             <a
               href={modalModulo.link}
               target="_blank"
@@ -505,15 +532,28 @@ export default function ModulosCurso() {
                 Pode ser um vídeo do YouTube, documento, artigo, etc.
                 type="url" faz o navegador validar que é uma URL válida. */}
             <label>
-              Link (opcional)
+              Link / vídeo do YouTube (opcional)
               <input
                 type="url"
                 name="link"
                 value={formModulo.link}
                 onChange={handleFormChange}
-                placeholder="https://exemplo.com/video-do-modulo"
+                placeholder="https://youtube.com/watch?v=... (toca no módulo)"
               />
             </label>
+
+            {/* Só faz sentido oferecer a thumbnail quando há um vídeo válido */}
+            {youtubeEmbedUrl(formModulo.link) && (
+              <label className="modulo-thumb-check">
+                <input
+                  type="checkbox"
+                  name="usarThumbnail"
+                  checked={formModulo.usarThumbnail}
+                  onChange={handleFormChange}
+                />
+                Usar a thumbnail do vídeo como imagem do módulo
+              </label>
+            )}
 
             <div className="curso-form-acoes">
               {/* Botão excluir — só aparece em modo edição */}

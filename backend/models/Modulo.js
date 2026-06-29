@@ -7,6 +7,9 @@ const ModuloSchema = new mongoose.Schema({
   descricao: { type: String, required: true },
   imagem: { type: String, default: 'default.jpg' },
   link: { type: String, default: '' },
+  // Quando true e houver um link de vídeo do YouTube, a capa do módulo passa
+  // a ser a thumbnail do próprio vídeo em vez da imagem da pasta /img.
+  usarThumbnail: { type: Boolean, default: false },
   status: { type: String, enum: ['locked', 'in-progress', 'completed'], default: 'locked' },
 });
 
