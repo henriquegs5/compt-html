@@ -16,7 +16,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import {
   fetchCursos,
   fetchCursosMatriculados,
-  fetchModulosDoCurso,
   fetchProgressoDoCurso,
   setModuloStatusCurso,
   limparModulosCurso,
@@ -45,7 +44,7 @@ export default function ModulosCurso() {
   // selectAllCursos e selectAllModulosDoCurso são gerados pelo EntityAdapter
   // e convertem o estado normalizado { ids, entities } em um array simples
   const cursos        = useSelector(selectAllCursos)
-  const modulosDosCurso = useSelector(selectAllModulosDoCurso)
+  const modulosBrutos = useSelector(selectAllModulosDoCurso)
   const modulosStatus = useSelector(s => s.cursos.modulosDosCurso.status)
   const progressoDosModulos = useSelector(s => s.cursos.progressoDosModulos)
   
@@ -58,6 +57,14 @@ export default function ModulosCurso() {
   // Encontra o objeto do curso atual pela lista de cursos já carregada.
   // Compara string com string pois ambos vêm como texto ("1", "2"...)
   const curso = cursos.find(c => c.id === cursoId)
+
+  // Sobrepõe o progresso do usuário em cada módulo: o status exibido vem do
+  // progresso pessoal; se o usuário ainda não mexeu no módulo, fica 'locked'.
+  // Assim o status deixa de ser global e passa a ser por usuário.
+  const modulosDosCurso = modulosBrutos.map(m => ({
+    ...m,
+    status: progressoDosModulos[m.id] ?? 'locked',
+  }))
 
   // Usuário logado — usado para controle de permissão (admin/moderador)
   const usuario = useSelector(s => s.auth.usuario)
@@ -112,7 +119,6 @@ export default function ModulosCurso() {
 
     // Busca os módulos do curso com o id da URL
     dispatch(fetchModulosDoCurso(cursoId))
-    
     // Busca as reviews do curso
     dispatch(fetchReviews(cursoId))
   }, [dispatch, cursoId])  // re-executa se o cursoId mudar

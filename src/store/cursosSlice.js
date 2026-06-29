@@ -106,9 +106,6 @@ export const fetchProgressoGeral = createAsyncThunk(
     return await res.json();
   }
 )
-
-
-/**
  * Adiciona um novo curso ao banco de dados.
  * @async
  * @function adicionarCurso
@@ -427,7 +424,6 @@ const cursosSlice = createSlice({
         state.progressoGeralStatus = 'succeeded'
         state.progressoGeral = action.payload
       })
-
       // --- Adicionar curso ---
       .addCase(adicionarCurso.fulfilled, (state, action) => {
         cursosAdapter.addOne(state, action.payload)

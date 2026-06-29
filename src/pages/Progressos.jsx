@@ -39,7 +39,6 @@ export default function Progressos() {
     if (p.status === 'completed') totalModulosCompletosGlobais++
     if (p.status === 'in-progress') totalModulosEmAndamentoGlobais++
   })
-
   return (
     <Layout>
       <h1 className="title">Meus progressos</h1>
