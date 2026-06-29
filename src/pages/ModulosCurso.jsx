@@ -27,6 +27,7 @@ import {
   fetchReviews,
   enviarReview,
   selectAllReviews,
+  fetchModulosDoCurso,
 } from '../store/cursosSlice'
 import Layout from '../components/Layout'
 import Modal  from '../components/Modal'
