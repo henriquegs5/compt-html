@@ -119,11 +119,11 @@ export default function PainelAdmin() {
                 {/* Coluna: avatar + nome */}
                 <td>
                   <div className="admin-user-cell">
-                    <img
-                      className="admin-avatar"
-                      src={user.avatarUrl || `https://i.pravatar.cc/40?u=${uid}`}
-                      alt={user.name}
-                    />
+                    {user.avatarUrl ? (
+                      <img className="admin-avatar" src={user.avatarUrl} alt={user.name} />
+                    ) : (
+                      <div className="admin-avatar admin-avatar--placeholder">👤</div>
+                    )}
                     <span>{user.name}</span>
                   </div>
                 </td>

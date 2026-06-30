@@ -70,6 +70,14 @@
   object-fit: cover;
   border: 2px solid var(--border);
 }
+.admin-avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface2);
+  font-size: .9rem;
+}
+}
 
 /* ---- Badges de cargo ---- */
 /* Cada cargo tem uma cor diferente para fácil identificação */

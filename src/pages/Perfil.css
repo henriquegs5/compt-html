@@ -27,6 +27,13 @@
   object-fit: cover;
   background: var(--surface2);
 }
+.avatar--placeholder-lg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface2);
+  font-size: 2rem;
+}
 
 .profile-info { flex: 1; }
 .profile-info h2 { font-size: 1.25rem; font-weight: 600; }

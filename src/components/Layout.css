@@ -54,6 +54,13 @@
   object-fit: cover;
   border: 2px solid var(--primary);
 }
+.avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface2);
+  font-size: 1.1rem;
+}
 
 .btn-logout {
   background: transparent;

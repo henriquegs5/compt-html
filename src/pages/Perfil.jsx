@@ -60,9 +60,7 @@ export default function Perfil() {
   // ---------- toast ----------
   const [toast, setToast] = useState(null)
 
-  // Avatar exibido no card: imagem importada pelo usuário (avatarUrl) ou,
-  // se ele ainda não escolheu nenhuma, um avatar gerado a partir do uid.
-  const avatarAtual = dados?.avatarUrl || `https://i.pravatar.cc/80?u=${usuario?.uid}`
+  const avatarExiste = !!dados?.avatarUrl
 
   // Abre o modal de edição com os dados atuais pré-preenchidos
   function abrirEdicao() {
@@ -143,13 +141,11 @@ export default function Perfil() {
         <div className="profile-banner" />
 
         <div className="profile-header">
-          {/* Avatar: imagem importada pelo usuário, ou gerada pelo uid se ele
-              ainda não escolheu nenhuma */}
-          <img
-            src={avatarAtual}
-            className="profile-avatar"
-            alt="avatar"
-          />
+          {avatarExiste ? (
+            <img src={dados.avatarUrl} className="profile-avatar" alt="avatar" />
+          ) : (
+            <div className="profile-avatar avatar--placeholder-lg">👤</div>
+          )}
 
           <div className="profile-info">
             {/* Nome vem diretamente do usuário autenticado (não de um perfil mockado) */}
@@ -193,11 +189,11 @@ export default function Perfil() {
           <div className="compt-modal-field">
             <label>Foto de perfil</label>
             <div className="avatar-upload">
-              <img
-                src={avatar || avatarAtual}
-                className="avatar-preview"
-                alt="prévia do avatar"
-              />
+              {avatar || dados?.avatarUrl ? (
+                <img src={avatar || dados.avatarUrl} className="avatar-preview" alt="prévia do avatar" />
+              ) : (
+                <div className="avatar-preview avatar--placeholder-lg">👤</div>
+              )}
               <div className="avatar-upload-actions">
                 {/* O input de arquivo nativo é feio; escondemos ele e usamos a
                     própria <label> como botão estilizado para abrir o seletor */}
