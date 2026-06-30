@@ -5,7 +5,7 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['cliente', 'moderador', 'admin'], default: 'cliente' },
-  bio: { type: String, default: 'Jogador competitivo na plataforma Compt.' },
+  bio: { type: String, default: 'Jogador competitivo na plataforma Compt.', maxlength: 300 },
   avatarUrl: { type: String },
   ranks: { type: [{ jogo: String, rank: String }], default: [] },
   criadoEm: { type: Date, default: Date.now },

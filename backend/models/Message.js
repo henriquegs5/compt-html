@@ -4,7 +4,7 @@ const MessageSchema = new mongoose.Schema({
   canal: { type: String, required: true },
   authorUid: { type: String, required: true },
   authorName: { type: String, required: true },
-  text: { type: String, required: true },
+  text: { type: String, required: true, maxlength: 1000 },
   createdAt: { type: Date, default: Date.now }
 });
 

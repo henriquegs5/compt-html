@@ -2,10 +2,23 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import passport from 'passport';
+import rateLimit from 'express-rate-limit';
 import User from '../models/User.js';
 import { JWT_SECRET } from '../config/env.js';
 
 const router = express.Router();
+
+// Limita tentativas de login por IP para dificultar ataques de força bruta:
+// no máximo 10 tentativas a cada 15 minutos. Respostas bem-sucedidas não contam.
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  skipSuccessfulRequests: true,
+  message: { error: 'Muitas tentativas de login. Tente novamente em alguns minutos.' },
+});
+
+// Limite de caracteres para a bio do perfil
+const MAX_BIO = 300;
 
 // POST /auth/register - Cadastro de novo usuário
 router.post('/register', async (req, res) => {
@@ -43,7 +56,7 @@ router.post('/register', async (req, res) => {
 });
 
 // POST /auth/login - Autenticação
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { email, senha } = req.body;
     const emailLower = email.toLowerCase();
@@ -85,6 +98,11 @@ router.get('/me', passport.authenticate('jwt', { session: false }), async (req, 
 router.patch('/me', passport.authenticate('jwt', { session: false }), async (req, res) => {
   try {
     const { bio, ranks, avatarUrl } = req.body;
+
+    // Limita o tamanho da bio para não inflar o documento do usuário
+    if (typeof bio === 'string' && bio.length > MAX_BIO) {
+      return res.status(400).json({ error: `A bio deve ter no máximo ${MAX_BIO} caracteres.` });
+    }
 
     const updates = {};
     if (bio !== undefined) updates.bio = bio;

@@ -4,6 +4,16 @@ import Message from '../models/Message.js';
 
 const router = express.Router();
 
+// Limite de caracteres por mensagem (evita mensagens gigantes inflando o banco)
+const MAX_TEXT = 1000;
+
+// Valida o texto de uma mensagem; retorna uma string de erro ou null se ok
+function validarTexto(text) {
+  if (typeof text !== 'string' || !text.trim()) return 'A mensagem não pode ficar vazia.';
+  if (text.length > MAX_TEXT) return `A mensagem deve ter no máximo ${MAX_TEXT} caracteres.`;
+  return null;
+}
+
 // GET /mensagens?canal=xyz&page=1
 router.get('/', async (req, res) => {
   try {
@@ -32,7 +42,10 @@ router.get('/', async (req, res) => {
 router.post('/', passport.authenticate('jwt', { session: false }), async (req, res) => {
   try {
     const { canal, text } = req.body;
-    
+
+    const erro = validarTexto(text);
+    if (erro) return res.status(400).json({ error: erro });
+
     const novaMensagem = new Message({
       canal,
       text,
@@ -52,6 +65,9 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), async (req,
   try {
     const { id } = req.params;
     const { text } = req.body;
+
+    const erro = validarTexto(text);
+    if (erro) return res.status(400).json({ error: erro });
 
     const mensagem = await Message.findById(id);
     if (!mensagem) {

@@ -273,7 +273,7 @@ export default function Perfil() {
 
           <div className="compt-modal-field">
             <label>Bio</label>
-            <textarea rows={3} value={bio} onChange={e => setBio(e.target.value)} />
+            <textarea rows={3} value={bio} onChange={e => setBio(e.target.value)} maxLength={300} />
           </div>
 
           {cursoStatsEdit.length > 0 && (

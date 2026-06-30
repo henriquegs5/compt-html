@@ -181,6 +181,7 @@ export default function Chat({ canal }) {
           onChange={e => setTexto(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && enviar()}
           placeholder="Digite sua mensagem..."
+          maxLength={1000}
         />
         <button onClick={enviar}>Enviar</button>
       </div>
