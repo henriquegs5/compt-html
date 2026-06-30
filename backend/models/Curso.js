@@ -5,7 +5,6 @@ const CursoSchema = new mongoose.Schema({
   titulo: { type: String, required: true },
   descricao: { type: String, required: true },
   imagem: { type: String, default: 'default.jpg' },
-  totalModulos: { type: Number, default: 0 },
   pago: { type: Boolean, default: false },
   preco: { type: Number, default: 0 },
   horas: { type: Number, default: 0 },

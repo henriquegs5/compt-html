@@ -158,7 +158,6 @@ export const adicionarCurso = createAsyncThunk(
  * @param {string} cursoData.titulo - Título do curso
  * @param {string} cursoData.descricao - Descrição do curso
  * @param {string} cursoData.imagem - Imagem de capa
- * @param {number|string} cursoData.totalModulos - Total de módulos
  * @returns {Promise<Object>} O curso editado retornado pelo servidor
  */
 function slugify(texto) {
