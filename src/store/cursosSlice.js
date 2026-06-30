@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit'
+import { getToken } from './authSlice'
 
 // Endereço base do servidor de dados (json-server rodando na porta 3001)
 const API = 'http://localhost:3001'
@@ -22,8 +23,7 @@ const reviewsAdapter = createEntityAdapter()
  * @returns {Promise<Array>} Array com todos os cursos cadastrados
  */
 export const fetchCursos = createAsyncThunk('cursos/fetchCursos', async (_, { rejectWithValue }) => {
-  const sessao = JSON.parse(localStorage.getItem('compt_session'));
-  const token = sessao ? sessao.token : '';
+  const token = getToken();
   const res = await fetch(`${API}/cursos`, {
     headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) }
   })
@@ -45,8 +45,7 @@ export const fetchCursos = createAsyncThunk('cursos/fetchCursos', async (_, { re
 export const fetchModulosDoCurso = createAsyncThunk(
   'cursos/fetchModulosDoCurso',
   async (cursoId) => {
-    const sessao = JSON.parse(localStorage.getItem('compt_session'));
-    const token = sessao ? sessao.token : '';
+    const token = getToken();
     const res    = await fetch(`${API}/modulos`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })  // busca todos os módulos
@@ -69,8 +68,7 @@ export const fetchModulosDoCurso = createAsyncThunk(
 export const setModuloStatusCurso = createAsyncThunk(
   'cursos/setModuloStatusCurso',
   async ({ id, status, cursoId }) => {
-    const sessao = JSON.parse(localStorage.getItem('compt_session'));
-    const token = sessao ? sessao.token : '';
+    const token = getToken();
     await fetch(`${API}/modulos/${id}/progresso`, {
       method: 'POST',
       headers: {
@@ -86,8 +84,7 @@ export const setModuloStatusCurso = createAsyncThunk(
 export const fetchProgressoDoCurso = createAsyncThunk(
   'cursos/fetchProgressoDoCurso',
   async (cursoId) => {
-    const sessao = JSON.parse(localStorage.getItem('compt_session'));
-    const token = sessao ? sessao.token : '';
+    const token = getToken();
     const res = await fetch(`${API}/modulos/curso/${cursoId}/progresso`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -98,8 +95,7 @@ export const fetchProgressoDoCurso = createAsyncThunk(
 export const fetchProgressoGeral = createAsyncThunk(
   'cursos/fetchProgressoGeral',
   async () => {
-    const sessao = JSON.parse(localStorage.getItem('compt_session'));
-    const token = sessao ? sessao.token : '';
+    const token = getToken();
     const res = await fetch(`${API}/modulos/meus-progressos`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -174,11 +170,6 @@ function slugify(texto) {
     .trim()
 }
 
-function getToken() {
-  const s = JSON.parse(localStorage.getItem('compt_session'))
-  return s ? s.token : ''
-}
-
 export const editarCurso = createAsyncThunk(
   'cursos/editarCurso',
   async ({ id, titulo, descricao, imagem, pago, preco, horas, comChat, chat: existingChat, rankingMethods }) => {
@@ -225,8 +216,7 @@ export const editarCurso = createAsyncThunk(
 export const excluirCurso = createAsyncThunk(
   'cursos/excluirCurso',
   async (id) => {
-    const sessao = JSON.parse(localStorage.getItem('compt_session'));
-    const token = sessao ? sessao.token : '';
+    const token = getToken();
     await fetch(`${API}/cursos/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -248,8 +238,7 @@ export const adicionarModulo = createAsyncThunk(
       usarThumbnail: usarThumbnail || false,
       status: 'locked',
     }
-    const sessao = JSON.parse(localStorage.getItem('compt_session'));
-    const token = sessao ? sessao.token : '';
+    const token = getToken();
     const res = await fetch(`${API}/modulos`, {
       method: 'POST',
       headers: {
@@ -272,8 +261,7 @@ export const editarModulo = createAsyncThunk(
       link: link || '',
       usarThumbnail: usarThumbnail || false,
     }
-    const sessao = JSON.parse(localStorage.getItem('compt_session'));
-    const token = sessao ? sessao.token : '';
+    const token = getToken();
     const res = await fetch(`${API}/modulos/${id}`, {
       method: 'PATCH',
       headers: {
@@ -289,8 +277,7 @@ export const editarModulo = createAsyncThunk(
 export const excluirModulo = createAsyncThunk(
   'cursos/excluirModulo',
   async (id) => {
-    const sessao = JSON.parse(localStorage.getItem('compt_session'));
-    const token = sessao ? sessao.token : '';
+    const token = getToken();
     await fetch(`${API}/modulos/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -302,8 +289,7 @@ export const excluirModulo = createAsyncThunk(
 export const fetchCursosMatriculados = createAsyncThunk(
   'cursos/fetchCursosMatriculados',
   async (_, { rejectWithValue }) => {
-    const sessao = JSON.parse(localStorage.getItem('compt_session'));
-    const token = sessao ? sessao.token : '';
+    const token = getToken();
     if (!token) return rejectWithValue('Usuário não autenticado')
     const res = await fetch(`${API}/cursos/matriculados`, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -319,8 +305,7 @@ export const fetchCursosMatriculados = createAsyncThunk(
 export const matricularCurso = createAsyncThunk(
   'cursos/matricularCurso',
   async (cursoId, { rejectWithValue }) => {
-    const sessao = JSON.parse(localStorage.getItem('compt_session'));
-    const token = sessao ? sessao.token : '';
+    const token = getToken();
     const res = await fetch(`${API}/cursos/${cursoId}/matricula`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -336,8 +321,7 @@ export const matricularCurso = createAsyncThunk(
 export const desmatricularCurso = createAsyncThunk(
   'cursos/desmatricularCurso',
   async (cursoId) => {
-    const sessao = JSON.parse(localStorage.getItem('compt_session'));
-    const token = sessao ? sessao.token : '';
+    const token = getToken();
     await fetch(`${API}/cursos/${cursoId}/matricula`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -357,8 +341,7 @@ export const fetchReviews = createAsyncThunk(
 export const enviarReview = createAsyncThunk(
   'cursos/enviarReview',
   async ({ cursoId, nota, texto }) => {
-    const sessao = JSON.parse(localStorage.getItem('compt_session'));
-    const token = sessao ? sessao.token : '';
+    const token = getToken();
     const res = await fetch(`${API}/cursos/${cursoId}/reviews`, {
       method: 'POST',
       headers: {

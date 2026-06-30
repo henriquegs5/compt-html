@@ -10,18 +10,9 @@
 // ============================================================
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { getToken } from './authSlice'
 
 const API = 'http://localhost:3001'
-
-// Obtém o token JWT da sessão salva no localStorage
-function getToken() {
-  try {
-    const sessao = JSON.parse(localStorage.getItem('compt_session'))
-    return sessao ? sessao.token : null
-  } catch {
-    return null
-  }
-}
 
 // ---- Thunks ----
 

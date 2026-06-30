@@ -1,13 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { fazerLogin, fazerCadastro, fazerLogout } from './authSlice'
+import { fazerLogin, fazerCadastro, fazerLogout, getToken } from './authSlice'
 
 const API = 'http://localhost:3001'
-
-// Obtém o token da sessão
-function getToken() {
-  const sessao = JSON.parse(localStorage.getItem('compt_session'))
-  return sessao ? sessao.token : null
-}
 
 export const fetchPerfil = createAsyncThunk(
   'perfil/fetchPerfil',

@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { getToken } from './authSlice'
 //maia
 const API = 'http://localhost:3001'
 
@@ -6,8 +7,7 @@ const API = 'http://localhost:3001'
 // A rota GET /modulos é protegida por JWT, então precisamos enviar
 // o token salvo na sessão (localStorage) no header Authorization.
 export const fetchModulos = createAsyncThunk('modulos/fetchModulos', async () => {
-  const sessao = JSON.parse(localStorage.getItem('compt_session'))
-  const token = sessao ? sessao.token : ''
+  const token = getToken()
   const res = await fetch(`${API}/modulos`, {
     headers: { 'Authorization': `Bearer ${token}` }
   })
