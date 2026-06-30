@@ -34,7 +34,19 @@ const PORT = process.env.PORT || 3001;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/compt';
 
 // Middlewares
-app.use(cors());
+// CORS: em vez de liberar qualquer origem (cors() puro), só aceitamos chamadas
+// vindas de localhost/127.0.0.1 em qualquer porta. Isso cobre o front em dev
+// (Vite em 5173, 5174...) e a máquina de quem for rodar o projeto, mas bloqueia
+// sites aleatórios da internet. requisições sem origin (ex: Postman) também passam.
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Origem não permitida pelo CORS'));
+    }
+  }
+}));
 // Limite maior que o padrão (100kb) porque o avatar enviado pelo usuário
 // chega como imagem em base64 (data URL), que ocupa bastante espaço no corpo.
 app.use(express.json({ limit: '5mb' }));
