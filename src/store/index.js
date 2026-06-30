@@ -12,6 +12,7 @@ import cursosReducer       from './cursosSlice'   // novo — gerencia cursos e 
 import perfilReducer       from './perfilSlice'
 import chatReducer         from './chatSlice'
 import estatisticasReducer from './estatisticasSlice'
+import atualizacoesReducer from './atualizacoesSlice'
 import subscriptionReducer from './subscriptionSlice'
 // Slice de gerenciamento de usuários — usado no painel admin/moderador
 import usersReducer        from './usersSlice'
@@ -26,6 +27,7 @@ export const store = configureStore({
     perfil:       perfilReducer,
     chat:         chatReducer,
     estatisticas: estatisticasReducer,
+    atualizacoes: atualizacoesReducer,
     subscription: subscriptionReducer,
     // Gerencia lista de usuários e alteração de cargos (admin/moderador)
     users:        usersReducer,
