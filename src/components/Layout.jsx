@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fazerLogout } from '../store/authSlice'
+import { avatarUrl } from '../utils/avatar'
 import './Layout.css'
 
 export default function Layout({ children }) {
@@ -46,11 +47,14 @@ export default function Layout({ children }) {
             </span>
           )}
           <span className="username">{usuario?.name ?? 'Usuário'}</span>
-          {usuario?.avatarUrl ? (
-            <img className="avatar" src={usuario.avatarUrl} alt="foto do usuário" />
-          ) : (
-            <div className="avatar avatar--placeholder">👤</div>
-          )}
+          {(() => {
+            const url = avatarUrl(usuario)
+            return url ? (
+              <img className="avatar" src={url} alt="foto do usuário" />
+            ) : (
+              <div className="avatar avatar--placeholder">👤</div>
+            )
+          })()}
           <button className="btn-logout" onClick={handleLogout} title="Sair">⏻</button>
         </div>
       </header>

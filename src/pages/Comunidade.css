@@ -70,7 +70,8 @@
   right: 0;
 }
 
-.msg-user  { display: block; font-size: .75rem; color: var(--primary);    font-weight: 600; }
+.msg-user  { display: block; font-size: .75rem; color: var(--primary); font-weight: 600; text-decoration: none; cursor: pointer; }
+.msg-user:hover { text-decoration: underline; }
 .msg-text  { display: block; font-size: .9rem;  color: var(--text);       margin: .2rem 0; }
 .msg-time  { display: block; font-size: .72rem; color: var(--text-muted); text-align: right; }
 
@@ -273,6 +274,12 @@
 
 .atualizacao-autor {
   font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+}
+.atualizacao-autor:hover {
+  text-decoration: underline;
 }
 
 /* ---- Criar/excluir canais (admin/moderador) ---- */

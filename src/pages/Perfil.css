@@ -98,3 +98,82 @@
   cursor: pointer;
   padding: 0;
 }
+
+/* ---- Toggle de visibilidade na edição ---- */
+.stat-edit-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.stat-edit-row input[type="text"] {
+  flex: 1;
+}
+
+.stat-visibilidade-toggle {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  cursor: pointer;
+  font-size: .75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.stat-visibilidade-toggle input[type="checkbox"] {
+  accent-color: var(--primary);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.stat-visibilidade-toggle span {
+  line-height: 1;
+}
+
+/* ---- Caixas de estatísticas abaixo do perfil ---- */
+.profile-stats-caixas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1.2rem;
+  max-width: 680px;
+}
+
+.stat-caixa {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: .75rem;
+  padding: .8rem 1rem;
+  min-width: 160px;
+  flex: 1 1 auto;
+}
+
+.stat-caixa-titulo {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: .5rem;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.stat-caixa-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .6rem;
+  padding: .25rem 0;
+}
+
+.stat-caixa-label {
+  font-size: .82rem;
+  color: var(--text-muted);
+}
+
+.stat-caixa-valor {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--text);
+}

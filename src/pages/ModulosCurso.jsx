@@ -10,7 +10,7 @@
 //   - Botão ✏️ em cada card para editar/excluir o módulo
 // ============================================================
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
@@ -34,6 +34,7 @@ import Modal  from '../components/Modal'
 import Toast  from '../components/Toast'
 import Chat   from '../components/Chat'
 import { youtubeEmbedUrl, youtubeThumbnail } from '../utils/youtube'
+import { fetchEstatisticas, salvarEstatisticas } from '../store/estatisticasSlice'
 import './ModulosCurso.css'
 import './ModulosCurso-extras.css'
 
@@ -120,6 +121,24 @@ export default function ModulosCurso() {
   const [reviewForm, setReviewForm] = useState({ nota: 0, texto: '' })
   const [hoverStar, setHoverStar] = useState(0)
 
+  // ---- Estados para edição de estatísticas do curso ----
+  const cursosStats = useSelector(s => s.estatisticas.items)
+  const [cursoStats, setCursoStats] = useState([])
+  const initRef = useRef(null)
+
+  useEffect(() => {
+    if (curso?.rankingMethods?.length > 0 && initRef.current !== curso.id) {
+      const existente = cursosStats.find(c => c.cursoId === cursoId)
+      setCursoStats(
+        curso.rankingMethods.map(rm => {
+          const stat = existente?.stats?.find(s => s.nome === rm.nome)
+          return { nome: rm.nome, valor: stat?.valor || '', publico: stat?.publico ?? false }
+        })
+      )
+      initRef.current = curso.id
+    }
+  }, [curso, cursosStats, cursoId])
+
   // useEffect roda toda vez que o cursoId muda na URL.
   // Isso acontece quando o usuário troca de curso diretamente.
   useEffect(() => {
@@ -139,6 +158,8 @@ export default function ModulosCurso() {
     dispatch(fetchModulosDoCurso(cursoId))
     // Busca as reviews do curso
     dispatch(fetchReviews(cursoId))
+    // Busca as estatísticas do usuário para todos os cursos
+    dispatch(fetchEstatisticas())
   }, [dispatch, cursoId])  // re-executa se o cursoId mudar
 
   useEffect(() => {
@@ -232,11 +253,9 @@ export default function ModulosCurso() {
     }
 
     if (moduloEditandoId) {
-      // Edição: PATCH no módulo existente
       dispatch(editarModulo({ id: moduloEditandoId, ...formModulo }))
       setToast('Módulo atualizado!')
     } else {
-      // Criação: POST novo módulo associado ao cursoId atual (vindo da URL)
       dispatch(adicionarModulo({ cursoId, ...formModulo }))
       setToast('Módulo adicionado!')
     }
@@ -266,6 +285,21 @@ export default function ModulosCurso() {
     }
     dispatch(enviarReview({ cursoId, ...reviewForm }))
     setToast('Avaliação salva com sucesso!')
+  }
+
+  function handleStatChange(nome, valor) {
+    setCursoStats(prev => prev.map(s => s.nome === nome ? { ...s, valor } : s))
+  }
+
+  function handleStatToggle(nome) {
+    setCursoStats(prev => prev.map(s => s.nome === nome ? { ...s, publico: !s.publico } : s))
+  }
+
+  function handleSalvarStats() {
+    const stats = cursoStats.filter(s => s.valor.trim())
+    if (stats.length === 0) return
+    dispatch(salvarEstatisticas({ cursoId, stats }))
+    setToast('Estatísticas salvas!')
   }
 
   return (
@@ -583,6 +617,42 @@ export default function ModulosCurso() {
             </div>
           </form>
         </Modal>
+      )}
+
+      {/* --- SEÇÃO DE ESTATÍSTICAS DO CURSO --- */}
+      {curso?.rankingMethods?.length > 0 && (
+        <div className="curso-stats-section">
+          <h2>📊 Estatísticas</h2>
+          <p className="curso-stats-sub">Preencha suas estatísticas para este curso.</p>
+          <div className="curso-stats-grid">
+            {cursoStats.map(stat => (
+              <div className="curso-stat-field" key={stat.nome}>
+                <label className="curso-stat-label">{stat.nome}</label>
+                <div className="curso-stat-row">
+                  <input
+                    type="text"
+                    className="curso-stat-input"
+                    value={stat.valor}
+                    onChange={e => handleStatChange(stat.nome, e.target.value)}
+                    placeholder={`Seu ${stat.nome.toLowerCase()}...`}
+                    maxLength={30}
+                  />
+                  <label className="curso-stat-toggle">
+                    <input
+                      type="checkbox"
+                      checked={stat.publico}
+                      onChange={() => handleStatToggle(stat.nome)}
+                    />
+                    <span>{stat.publico ? 'Público' : 'Privado'}</span>
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button className="btn-salvar" onClick={handleSalvarStats}>
+            Salvar estatísticas
+          </button>
+        </div>
       )}
 
       {/* Toast — notificação que some automaticamente após alguns segundos */}

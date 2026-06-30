@@ -118,8 +118,25 @@ export const fetchProgressoGeral = createAsyncThunk(
  */
 export const adicionarCurso = createAsyncThunk(
   'cursos/adicionarCurso',
-  async ({ titulo, descricao, imagem, pago, preco, horas, chat }) => {
-    // Monta o objeto inicial a ser enviado para a API
+  async ({ titulo, descricao, imagem, pago, preco, horas, comChat, rankingMethods }) => {
+    let chat = ''
+
+    if (comChat) {
+      const slug = slugify(titulo)
+      const token = getToken()
+      const canalRes = await fetch(`${API}/canais`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ label: titulo })
+      })
+      if (canalRes.ok) {
+        const canal = await canalRes.json()
+        chat = canal.nome
+      } else {
+        chat = slug
+      }
+    }
+
     const novoCurso = {
       id: String(Date.now()),
       titulo,
@@ -128,12 +145,11 @@ export const adicionarCurso = createAsyncThunk(
       pago: pago || false,
       preco: preco || 0,
       horas: horas || 0,
-      chat: chat || ''
+      chat,
+      rankingMethods: rankingMethods || []
     }
 
-    const sessao = JSON.parse(localStorage.getItem('compt_session'));
-    const token = sessao ? sessao.token : '';
-
+    const token = getToken()
     const res = await fetch(`${API}/cursos`, {
       method: 'POST',
       headers: {
@@ -144,9 +160,6 @@ export const adicionarCurso = createAsyncThunk(
     })
 
     const data = await res.json()
-    // Sem essa checagem, um erro do backend (ex: 403) viraria o payload do
-    // thunk e o reducer tentaria atualizar com um objeto sem id — falhando em
-    // silêncio. Lançamos o erro para o componente poder avisar o usuário.
     if (!res.ok) throw new Error(data.error || 'Erro ao criar curso')
     return data
   }
@@ -164,9 +177,43 @@ export const adicionarCurso = createAsyncThunk(
  * @param {number|string} cursoData.totalModulos - Total de módulos
  * @returns {Promise<Object>} O curso editado retornado pelo servidor
  */
+function slugify(texto) {
+  return texto
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .trim()
+}
+
+function getToken() {
+  const s = JSON.parse(localStorage.getItem('compt_session'))
+  return s ? s.token : ''
+}
+
 export const editarCurso = createAsyncThunk(
   'cursos/editarCurso',
-  async ({ id, titulo, descricao, imagem, pago, preco, horas, chat }) => {
+  async ({ id, titulo, descricao, imagem, pago, preco, horas, comChat, rankingMethods }) => {
+    let chat = ''
+
+    if (comChat) {
+      const slug = slugify(titulo)
+      const token = getToken()
+      const canalRes = await fetch(`${API}/canais`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ label: titulo })
+      })
+      if (canalRes.ok) {
+        const canal = await canalRes.json()
+        chat = canal.nome
+      } else {
+        const err = await canalRes.json().catch(() => ({}))
+        // Se o canal já existe (400), usa o slug mesmo assim
+        chat = slug
+      }
+    }
+
     const dadosAtualizados = {
       titulo,
       descricao,
@@ -174,12 +221,11 @@ export const editarCurso = createAsyncThunk(
       pago,
       preco,
       horas,
-      chat: chat || ''
+      chat,
+      rankingMethods: rankingMethods || []
     }
 
-    const sessao = JSON.parse(localStorage.getItem('compt_session'));
-    const token = sessao ? sessao.token : '';
-
+    const token = getToken()
     const res = await fetch(`${API}/cursos/${id}`, {
       method: 'PATCH',
       headers: {
@@ -190,8 +236,6 @@ export const editarCurso = createAsyncThunk(
     })
 
     const data = await res.json()
-    // Se o backend recusar (ex: 403), o payload viria sem id e o updateOne não
-    // faria nada — a edição falharia em silêncio. Lançamos para avisar o usuário.
     if (!res.ok) throw new Error(data.error || 'Erro ao editar curso')
     return data
   }
@@ -221,14 +265,14 @@ export const adicionarModulo = createAsyncThunk(
   'cursos/adicionarModulo',
   async ({ cursoId, titulo, descricao, imagem, link, usarThumbnail }) => {
     const novoModulo = {
-      id: String(Date.now()),              // id único baseado no timestamp
-      cursoId,                             // vincula o módulo ao curso atual
+      id: String(Date.now()),
+      cursoId,
       titulo,
       descricao,
       imagem: imagem || 'default.jpg',
       link: link || '',
       usarThumbnail: usarThumbnail || false,
-      status: 'locked',                    // todo módulo novo começa bloqueado
+      status: 'locked',
     }
     const sessao = JSON.parse(localStorage.getItem('compt_session'));
     const token = sessao ? sessao.token : '';
@@ -277,31 +321,40 @@ export const excluirModulo = createAsyncThunk(
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     })
-    return id  // devolve o id para o reducer saber qual módulo remover
+    return id
   }
 )
 
 export const fetchCursosMatriculados = createAsyncThunk(
   'cursos/fetchCursosMatriculados',
-  async () => {
+  async (_, { rejectWithValue }) => {
     const sessao = JSON.parse(localStorage.getItem('compt_session'));
     const token = sessao ? sessao.token : '';
+    if (!token) return rejectWithValue('Usuário não autenticado')
     const res = await fetch(`${API}/cursos/matriculados`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Erro ao buscar matrículas' }))
+      return rejectWithValue(err.error || 'Erro ao buscar matrículas')
+    }
     return await res.json();
   }
 )
 
 export const matricularCurso = createAsyncThunk(
   'cursos/matricularCurso',
-  async (cursoId) => {
+  async (cursoId, { rejectWithValue }) => {
     const sessao = JSON.parse(localStorage.getItem('compt_session'));
     const token = sessao ? sessao.token : '';
-    await fetch(`${API}/cursos/${cursoId}/matricula`, {
+    const res = await fetch(`${API}/cursos/${cursoId}/matricula`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Erro ao matricular' }))
+      return rejectWithValue(err.error || 'Erro ao matricular')
+    }
     return cursoId;
   }
 )
@@ -483,15 +536,20 @@ const cursosSlice = createSlice({
       .addCase(fetchCursosMatriculados.pending, (state) => { state.matriculadosStatus = 'loading' })
       .addCase(fetchCursosMatriculados.fulfilled, (state, action) => {
         state.matriculadosStatus = 'succeeded'
-        state.matriculados = action.payload
+        state.matriculados = action.payload || []
+      })
+      .addCase(fetchCursosMatriculados.rejected, (state) => {
+        state.matriculadosStatus = 'failed'
       })
       .addCase(matricularCurso.fulfilled, (state, action) => {
-        if (!state.matriculados.includes(action.payload)) {
+        if (Array.isArray(state.matriculados) && !state.matriculados.includes(action.payload)) {
           state.matriculados.push(action.payload)
         }
       })
       .addCase(desmatricularCurso.fulfilled, (state, action) => {
-        state.matriculados = state.matriculados.filter(id => id !== action.payload)
+        if (Array.isArray(state.matriculados)) {
+          state.matriculados = state.matriculados.filter(id => id !== action.payload)
+        }
       })
 
       // --- Reviews ---

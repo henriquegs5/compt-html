@@ -9,8 +9,8 @@
 
 import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 import { fetchMensagens, postMensagem, deleteMensagem, editarMensagem } from '../store/chatSlice'
-// Reaproveita os estilos do chat já definidos na página Comunidade
 import '../pages/Comunidade.css'
 
 function formatTime(dateString) {
@@ -137,7 +137,7 @@ export default function Chat({ canal }) {
               {showHeader && <div className="chat-date-separator">{dateHeader}</div>}
               <div className={`message${isOwn ? ' message--own' : ''}`}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span className="msg-user">{msg.authorName}</span>
+                  <Link to={`/perfil/${msg.authorUid}`} className="msg-user">{msg.authorName}</Link>
                   <div className="msg-actions" style={{ display: 'flex', gap: '8px' }}>
                     {podeEditar && editingMsgId !== msg.id && (
                       <button className="msg-action-btn" title="Editar" onClick={() => iniciarEdicao(msg)}>✏️</button>

@@ -1,25 +1,15 @@
-// ============================================================
-// pages/Perfil.jsx
-// Página de perfil do usuário logado.
-//
-// Dados exibidos:
-//   - Nome e avatar: sempre do usuário autenticado (auth.usuario)
-//   - Bio: estado local do Redux (perfilSlice)
-//   - Ranks: estado local do Redux, editável pelo usuário
-//
-// Por que não usar o json-server para o perfil?
-//   O json-server guarda um único objeto /perfil fixo (mock).
-//   Para exibir o perfil correto de cada usuário logado, usamos
-//   o estado Redux inicializado no momento do login.
-// ============================================================
-
 import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
-import { atualizarPerfilBackend, deletarPerfil, fetchPerfil } from '../store/perfilSlice'
+import {
+  atualizarPerfilBackend, deletarPerfil, fetchPerfil,
+  fetchUserById, fetchEstatisticasPublicas
+} from '../store/perfilSlice'
 import { fazerLogout } from '../store/authSlice'
+import { fetchEstatisticas, salvarEstatisticas } from '../store/estatisticasSlice'
 
+import { avatarUrl } from '../utils/avatar'
 import Layout from '../components/Layout'
 import Modal  from '../components/Modal'
 import Toast  from '../components/Toast'
@@ -28,93 +18,121 @@ import './Perfil.css'
 export default function Perfil() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const { userId } = useParams()
 
-  // Usuário logado — fonte principal para nome e avatar
   const usuario = useSelector(s => s.auth.usuario)
-
-  // Dados editáveis do perfil (bio e ranks) — estado local do Redux
   const dados = useSelector(s => s.perfil.dados)
   const statusPerfil = useSelector(s => s.perfil.status)
+  const cursosStats = useSelector(s => s.estatisticas.items)
+  const estatStatus = useSelector(s => s.estatisticas.status)
+  const perfilVisitado = useSelector(s => s.perfil.perfilVisitado)
+  const perfilVisitadoStatus = useSelector(s => s.perfil.perfilVisitadoStatus)
+  const perfilVisitadoStats = useSelector(s => s.perfil.perfilVisitadoStats)
 
-  // Ao montar a tela de perfil, se houver usuário mas os dados estiverem vazios (F5), baixa do backend
+  const isVisitando = !!userId
+
   useEffect(() => {
-    if (usuario && (!dados || statusPerfil === 'idle')) {
-      dispatch(fetchPerfil())
+    if (isVisitando) {
+      dispatch(fetchUserById(userId))
+      dispatch(fetchEstatisticasPublicas(userId))
+    } else {
+      if (usuario && (!dados || statusPerfil === 'idle')) {
+        dispatch(fetchPerfil())
+      }
+      if (estatStatus === 'idle') {
+        dispatch(fetchEstatisticas())
+      }
     }
-  }, [usuario, dados, statusPerfil, dispatch])
+  }, [isVisitando, userId, dispatch])
 
-  // ---------- estados do modal de edição ----------
   const [editando, setEditando] = useState(false)
-
-  // Campos do formulário de edição
-  const [bio,   setBio]   = useState('')
-  // ranks: cópia local do array de ranks para edição no modal
-  const [ranks, setRanks] = useState([])
-  // avatar: imagem escolhida pelo usuário, guardada como data URL (base64).
-  // Começa com o avatar atual e só muda se o usuário importar uma nova imagem.
+  const [bio, setBio] = useState('')
   const [avatar, setAvatar] = useState('')
+  const [cursoStatsEdit, setCursoStatsEdit] = useState([])
 
-  // ---------- estado do modal de exclusão ----------
   const [confirmandoDelete, setConfirmandoDelete] = useState(false)
-
-  // ---------- toast ----------
   const [toast, setToast] = useState(null)
 
-  const avatarExiste = !!dados?.avatarUrl
+  const avatarExiste = !!avatarUrl(isVisitando ? perfilVisitado : dados)
 
-  // Abre o modal de edição com os dados atuais pré-preenchidos
   function abrirEdicao() {
     setBio(dados?.bio ?? '')
-    // Copia o array de ranks para não mutar o estado Redux diretamente
-    setRanks(dados?.ranks?.map(r => ({ ...r })) ?? [])
-    setAvatar(dados?.avatarUrl ?? '')
+    setAvatar(avatarUrl(dados))
     setEditando(true)
+
+    function extrairStats(data) {
+      if (!Array.isArray(data)) return []
+      return data.map(c => ({
+        cursoId: c.cursoId,
+        titulo: c.titulo,
+        rankingMethods: c.rankingMethods || [],
+        stats: c.stats ? c.stats.map(s => ({ ...s })) : []
+      }))
+    }
+
+    if (estatStatus === 'idle' || estatStatus === 'failed') {
+      dispatch(fetchEstatisticas()).then((res) => {
+        if (res.meta.requestStatus === 'fulfilled') {
+          setCursoStatsEdit(extrairStats(res.payload))
+        }
+      })
+    } else {
+      setCursoStatsEdit(extrairStats(cursosStats))
+    }
   }
 
-  // Lê a imagem escolhida no input de arquivo e a converte para data URL
-  // (texto base64), que é o formato que enviamos ao backend e guardamos no
-  // banco. Validamos tipo (precisa ser imagem) e tamanho para não estourar
-  // o limite do corpo da requisição nem o documento no MongoDB.
   function handleAvatarChange(e) {
     const file = e.target.files?.[0]
     if (!file) return
-
     if (!file.type.startsWith('image/')) {
       setToast('Selecione um arquivo de imagem.')
       return
     }
-    // Limite de 2 MB — base64 cresce ~33%, então fica bem abaixo do limite
-    // de 5 MB que configuramos no backend.
     if (file.size > 2 * 1024 * 1024) {
       setToast('Imagem muito grande. Escolha uma com até 2 MB.')
       return
     }
-
     const reader = new FileReader()
-    reader.onload = () => setAvatar(reader.result) // reader.result = data URL
+    reader.onload = () => setAvatar(reader.result)
     reader.readAsDataURL(file)
   }
 
-  // Atualiza o rank de um jogo específico enquanto o usuário digita
-  // idx = índice no array, valor = texto digitado
-  function handleRankChange(idx, valor) {
-    setRanks(prev => prev.map((r, i) => i === idx ? { ...r, rank: valor } : r))
+  function handleCursoStatChange(cursoIdx, statNome, valor) {
+    setCursoStatsEdit(prev => prev.map((c, ci) => {
+      if (ci !== cursoIdx) return c
+      const existente = c.stats.find(s => s.nome === statNome)
+      const novaStats = existente
+        ? c.stats.map(s => s.nome === statNome ? { ...s, valor } : s)
+        : [...c.stats, { nome: statNome, valor, publico: false }]
+      return { ...c, stats: novaStats }
+    }))
   }
 
-  // Salva as alterações no Redux. Só mandamos avatarUrl se o usuário escolheu
-  // uma imagem (avatar preenchido) — assim não sobrescrevemos com vazio.
+  function handleStatVisibilityToggle(cursoIdx, statNome) {
+    setCursoStatsEdit(prev => prev.map((c, ci) => {
+      if (ci !== cursoIdx) return c
+      const existente = c.stats.find(s => s.nome === statNome)
+      const novaStats = existente
+        ? c.stats.map(s => s.nome === statNome ? { ...s, publico: !s.publico } : s)
+        : [...c.stats, { nome: statNome, valor: '', publico: true }]
+      return { ...c, stats: novaStats }
+    }))
+  }
+
   function salvar() {
-    const payload = { bio, ranks }
+    const payload = { bio }
     if (avatar) payload.avatarUrl = avatar
     dispatch(atualizarPerfilBackend(payload))
     setEditando(false)
     setToast('Perfil atualizado com sucesso!')
+
+    cursoStatsEdit.forEach(c => {
+      if (c.stats.length > 0) {
+        dispatch(salvarEstatisticas({ cursoId: c.cursoId, stats: c.stats }))
+      }
+    })
   }
 
-  // Remove a foto de perfil do servidor. Mandamos avatarUrl vazio: o backend
-  // grava '' no banco e, como esse valor é "falsy", o display volta a usar o
-  // avatar gerado pelo uid. Só chama o backend se havia uma foto salva; caso
-  // contrário apenas limpa a imagem recém-escolhida no preview.
   function removerAvatar() {
     setAvatar('')
     if (dados?.avatarUrl) {
@@ -123,80 +141,114 @@ export default function Perfil() {
     }
   }
 
-  // Exclui a conta: limpa o perfil, faz logout e redireciona
   function confirmarDelete() {
     dispatch(deletarPerfil())
     dispatch(fazerLogout())
     navigate('/login')
   }
 
-  // Enquanto o perfil ainda não foi inicializado (ex: usuário acabou de logar)
-  if (!dados) return <Layout><p className="loading-msg">Carregando perfil...</p></Layout>
+  const perfilAtual = isVisitando ? perfilVisitado : dados
+
+  if (!perfilAtual) {
+    return <Layout><p className="loading-msg">Carregando perfil...</p></Layout>
+  }
 
   return (
     <Layout>
       <h1 className="title">Perfil</h1>
+
+      {isVisitando && (
+        <button className="btn-voltar" onClick={() => navigate(-1)} style={{ marginBottom: '1rem' }}>
+          ← Voltar
+        </button>
+      )}
 
       <div className="profile-card">
         <div className="profile-banner" />
 
         <div className="profile-header">
           {avatarExiste ? (
-            <img src={dados.avatarUrl} className="profile-avatar" alt="avatar" />
+            <img src={perfilAtual.avatarUrl} className="profile-avatar" alt="avatar" />
           ) : (
             <div className="profile-avatar avatar--placeholder-lg">👤</div>
           )}
 
           <div className="profile-info">
-            {/* Nome vem diretamente do usuário autenticado (não de um perfil mockado) */}
-            <h2>{usuario?.name}</h2>
+            <h2>{perfilAtual.name}</h2>
+            <p className="profile-bio">{perfilAtual.bio || 'Sem bio ainda.'}</p>
 
-            {/* Bio vem do estado editável do Redux */}
-            <p className="profile-bio">{dados.bio || 'Sem bio ainda.'}</p>
-
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-              <button className="edit-btn" onClick={abrirEdicao}>Editar perfil</button>
-
-              <button
-                className="edit-btn"
-                onClick={() => setConfirmandoDelete(true)}
-                style={{ background: '#c0392b', borderColor: '#c0392b' }}
-              >
-                Excluir Conta
-              </button>
-            </div>
+            {!isVisitando && (
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button className="edit-btn" onClick={abrirEdicao}>Editar perfil</button>
+                <button
+                  className="edit-btn"
+                  onClick={() => setConfirmandoDelete(true)}
+                  style={{ background: '#c0392b', borderColor: '#c0392b' }}
+                >
+                  Excluir Conta
+                </button>
+              </div>
+            )}
           </div>
-        </div>
-
-        {/* Seção de ranks — um bloco por jogo, editável pelo modal de edição */}
-        <div className="profile-stats">
-          {dados.ranks?.map(r => (
-            <div className="profile-stat" key={r.jogo}>
-              <p>{r.jogo}</p>
-              {/* Mostra o rank preenchido ou "—" se ainda não foi informado */}
-              <strong>{r.rank || '—'}</strong>
-            </div>
-          ))}
         </div>
       </div>
 
-      {/* ---- Modal de edição de perfil ---- */}
+      {isVisitando ? (
+        <div className="profile-stats-caixas">
+          {perfilVisitadoStats.map(curso => {
+            const statsComValor = Array.isArray(curso.stats) ? curso.stats.filter(s => s.valor?.trim()) : []
+            if (statsComValor.length === 0) return null
+            return (
+              <div className="stat-caixa" key={curso.cursoId}>
+                <h4 className="stat-caixa-titulo">{curso.titulo}</h4>
+                {statsComValor.map(s => (
+                  <div className="stat-caixa-item" key={s.nome}>
+                    <span className="stat-caixa-label">{s.nome}</span>
+                    <span className="stat-caixa-valor">{s.valor}</span>
+                  </div>
+                ))}
+              </div>
+            )
+          })}
+          {perfilVisitadoStats.length === 0 && perfilVisitado && (
+            <p style={{ color: 'var(--text-muted)', fontSize: '.85rem' }}>
+              Este usuário não possui estatísticas públicas.
+            </p>
+          )}
+        </div>
+      ) : (
+        <div className="profile-stats-caixas">
+          {cursosStats.map(curso => {
+            const statsComValor = Array.isArray(curso.stats) ? curso.stats.filter(s => s.valor?.trim() && s.publico) : []
+            if (statsComValor.length === 0) return null
+            return (
+              <div className="stat-caixa" key={curso.cursoId}>
+                <h4 className="stat-caixa-titulo">{curso.titulo}</h4>
+                {statsComValor.map(s => (
+                  <div className="stat-caixa-item" key={s.nome}>
+                    <span className="stat-caixa-label">{s.nome}</span>
+                    <span className="stat-caixa-valor">{s.valor}</span>
+                  </div>
+                ))}
+              </div>
+            )
+          })}
+        </div>
+      )}
+
       {editando && (
         <Modal onClose={() => setEditando(false)}>
           <h3 style={{ marginBottom: '1.2rem' }}>Editar Perfil</h3>
 
-          {/* Campo: foto de perfil — preview da imagem + botão de importar */}
           <div className="compt-modal-field">
             <label>Foto de perfil</label>
             <div className="avatar-upload">
-              {avatar || dados?.avatarUrl ? (
-                <img src={avatar || dados.avatarUrl} className="avatar-preview" alt="prévia do avatar" />
+              {avatar || avatarUrl(dados) ? (
+                <img src={avatar || avatarUrl(dados)} className="avatar-preview" alt="prévia do avatar" />
               ) : (
                 <div className="avatar-preview avatar--placeholder-lg">👤</div>
               )}
               <div className="avatar-upload-actions">
-                {/* O input de arquivo nativo é feio; escondemos ele e usamos a
-                    própria <label> como botão estilizado para abrir o seletor */}
                 <label className="btn-secondary avatar-upload-btn">
                   Importar imagem
                   <input
@@ -206,9 +258,7 @@ export default function Perfil() {
                     hidden
                   />
                 </label>
-                {/* Remove a foto (do servidor, se já estiver salva) e volta ao
-                    avatar gerado automaticamente */}
-                {(avatar || dados?.avatarUrl) && (
+                {(avatar || avatarUrl(dados)) && (
                   <button
                     type="button"
                     className="avatar-remove-btn"
@@ -221,30 +271,52 @@ export default function Perfil() {
             </div>
           </div>
 
-          {/* Campo: bio */}
           <div className="compt-modal-field">
             <label>Bio</label>
             <textarea rows={3} value={bio} onChange={e => setBio(e.target.value)} />
           </div>
 
-          {/* Campos de rank — um input por jogo */}
-          <div style={{ marginTop: '1rem' }}>
-            <p style={{ fontSize: '.82rem', color: 'var(--text-muted)', marginBottom: '.7rem', fontWeight: 600 }}>
-              Seus ranks
-            </p>
-            {ranks.map((r, idx) => (
-              <div className="compt-modal-field" key={r.jogo}>
-                <label>{r.jogo}</label>
-                <input
-                  type="text"
-                  value={r.rank}
-                  onChange={e => handleRankChange(idx, e.target.value)}
-                  placeholder="Ex: Diamante, Surreal, 12.000 🏆..."
-                  maxLength={30}
-                />
-              </div>
-            ))}
-          </div>
+          {cursoStatsEdit.length > 0 && (
+            <div style={{ marginTop: '1.2rem' }}>
+              <p style={{ fontSize: '.82rem', color: 'var(--text-muted)', marginBottom: '.7rem', fontWeight: 600 }}>
+                Estatísticas dos cursos
+              </p>
+              {cursoStatsEdit.map((curso, ci) => (
+                curso.rankingMethods.length > 0 && (
+                  <div key={curso.cursoId} style={{ marginBottom: '1rem' }}>
+                    <p style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--text)', marginBottom: '.4rem' }}>
+                      {curso.titulo}
+                    </p>
+                    {curso.rankingMethods.map(rm => {
+                      const stat = curso.stats.find(s => s.nome === rm.nome)
+                      return (
+                        <div className="compt-modal-field" key={rm.nome}>
+                          <label>{rm.nome}</label>
+                          <div className="stat-edit-row">
+                            <input
+                              type="text"
+                              value={stat?.valor || ''}
+                              onChange={e => handleCursoStatChange(ci, rm.nome, e.target.value)}
+                              placeholder={`Informe seu ${rm.nome.toLowerCase()}...`}
+                              maxLength={30}
+                            />
+                            <label className="stat-visibilidade-toggle">
+                              <input
+                                type="checkbox"
+                                checked={stat?.publico ?? false}
+                                onChange={() => handleStatVisibilityToggle(ci, rm.nome)}
+                              />
+                              <span>{stat?.publico ? 'Público' : 'Privado'}</span>
+                            </label>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              ))}
+            </div>
+          )}
 
           <div className="compt-modal-actions" style={{ marginTop: '1.4rem' }}>
             <button className="btn-primary"   onClick={salvar}>Salvar</button>
@@ -253,7 +325,6 @@ export default function Perfil() {
         </Modal>
       )}
 
-      {/* ---- Modal de confirmação de exclusão de conta ---- */}
       {confirmandoDelete && (
         <Modal onClose={() => setConfirmandoDelete(false)}>
           <h3 style={{ marginBottom: '1rem', color: '#c0392b' }}>Excluir Conta</h3>

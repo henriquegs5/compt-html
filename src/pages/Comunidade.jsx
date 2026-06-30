@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 import { fetchCanais, criarCanal, excluirCanal, setCanal } from '../store/chatSlice'
 import { fetchAtualizacoes, criarAtualizacao, editarAtualizacao, excluirAtualizacao } from '../store/atualizacoesSlice'
 import Layout from '../components/Layout'
@@ -205,7 +206,7 @@ export default function Comunidade() {
                 </div>
                 <p className="atualizacao-texto">{up.text}</p>
                 <div className="atualizacao-meta">
-                  <span className="atualizacao-autor">{up.authorName}</span>
+                  <Link to={`/perfil/${up.authorUid}`} className="atualizacao-autor">{up.authorName}</Link>
                   <span className="atualizacao-data">{formatDateTime(up.createdAt)}</span>
                 </div>
               </div>

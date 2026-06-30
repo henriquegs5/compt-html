@@ -13,6 +13,7 @@ const CursoSchema = new mongoose.Schema({
   // Canal de chat exibido na página do curso (ex: 'geral', 'fortnite').
   // Vazio = curso sem chat.
   chat: { type: String, default: '' },
+  rankingMethods: { type: [{ nome: String }], default: [] },
 });
 
 // Remove o _id e __v ao retornar JSON e adiciona id

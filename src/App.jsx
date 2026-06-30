@@ -93,9 +93,8 @@ export default function App() {
         <Route path="/estatisticas"
           element={<ProtectedRoute><Estatisticas /></ProtectedRoute>}
         />
-        <Route path="/perfil"
-          element={<ProtectedRoute><Perfil /></ProtectedRoute>}
-        />
+        <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
+        <Route path="/perfil/:userId" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
         <Route path="/assinatura"
           element={<ProtectedRoute><Subscription /></ProtectedRoute>}
         />

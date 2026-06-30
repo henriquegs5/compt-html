@@ -7,20 +7,7 @@ const UserSchema = new mongoose.Schema({
   role: { type: String, enum: ['cliente', 'moderador', 'admin'], default: 'cliente' },
   bio: { type: String, default: 'Jogador competitivo na plataforma Compt.' },
   avatarUrl: { type: String },
-  ranks: {
-    type: [
-      {
-        jogo: String,
-        rank: String,
-      }
-    ],
-    default: [
-      { jogo: 'Fortnite', rank: '' },
-      { jogo: 'League of Legends', rank: '' },
-      { jogo: 'Rainbow Six Siege', rank: '' },
-      { jogo: 'Clash Royale', rank: '' },
-    ]
-  },
+  ranks: { type: [{ jogo: String, rank: String }], default: [] },
   criadoEm: { type: Date, default: Date.now },
 });
 

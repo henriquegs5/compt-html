@@ -14,7 +14,6 @@ import {
 import Layout from '../components/Layout'
 import Modal from '../components/Modal'
 import { IMAGENS_CURSO, srcImagemCurso } from '../utils/imagemCurso'
-import { fetchCanais } from '../store/chatSlice'
 import './Cursos.css'
 import './Cursos-extras.css'
 
@@ -36,8 +35,6 @@ export default function Cursos() {
   const matriculados = useSelector(s => s.cursos.matriculados)
   const matriculadosStatus = useSelector(s => s.cursos.matriculadosStatus)
   const usuario = useSelector(s => s.auth.usuario)
-  // Canais de chat disponíveis — usados no seletor "Chat do curso"
-  const canais = useSelector(s => s.chat.canais)
 
   const podeAdicionar = usuario?.role === 'admin' || usuario?.role === 'moderador'
 
@@ -54,19 +51,19 @@ export default function Cursos() {
     pago: false,
     preco: 0,
     horas: 0,
-    chat: ''
+    comChat: false,
+    rankingMethods: []
   })
 
   useEffect(() => {
     if (status === 'idle') dispatch(fetchCursos())
-    dispatch(fetchCanais())
     if (usuario && matriculadosStatus === 'idle') dispatch(fetchCursosMatriculados())
   }, [dispatch, status, matriculadosStatus, usuario])
 
+  const listaMatriculados = Array.isArray(matriculados) ? matriculados : []
+
   const cursosPorAba = items.filter(curso => {
-    const isMatriculado = matriculados.includes(curso.id)
-    // "Meus Cursos" = cursos que o usuário está acompanhando (matriculado).
-    // Cursos que ele criou continuam aparecendo em "Disponíveis".
+    const isMatriculado = listaMatriculados.includes(curso.id)
     if (activeTab === 'matriculados') return isMatriculado
     return !isMatriculado
   })
@@ -81,7 +78,7 @@ export default function Cursos() {
    * @function abrirModal
    */
   function abrirModal() {
-    setNovoCurso({ titulo: '', descricao: '', imagem: '', pago: false, preco: 0, horas: 0, chat: '' })
+    setNovoCurso({ titulo: '', descricao: '', imagem: '', pago: false, preco: 0, horas: 0, comChat: false, rankingMethods: [] })
     setCursoEditandoId(null)
     setModalAberto(true)
   }
@@ -99,7 +96,8 @@ export default function Cursos() {
       pago: curso.pago || false,
       preco: curso.preco || 0,
       horas: curso.horas || 0,
-      chat: curso.chat || ''
+      comChat: !!curso.chat,
+      rankingMethods: curso.rankingMethods ? curso.rankingMethods.map(r => ({ ...r })) : []
     })
     setCursoEditandoId(curso.id)
     setModalAberto(true)
@@ -157,6 +155,22 @@ export default function Cursos() {
    * @function handleSubmit
    * @param {React.FormEvent} e - O evento de submissão do formulário
    */
+  function adicionarRankingMethod() {
+    const nome = window.prompt('Nome da forma de rankeamento (ex: Rank, Troféus, K/D):')
+    if (!nome || !nome.trim()) return
+    setNovoCurso(prev => ({
+      ...prev,
+      rankingMethods: [...prev.rankingMethods, { nome: nome.trim() }]
+    }))
+  }
+
+  function removerRankingMethod(index) {
+    setNovoCurso(prev => ({
+      ...prev,
+      rankingMethods: prev.rankingMethods.filter((_, i) => i !== index)
+    }))
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
 
@@ -476,17 +490,35 @@ export default function Cursos() {
               />
             </label>
 
-            {/* Chat opcional do curso — escolhe qual canal aparece na página
-                do curso. "Nenhum" = curso sem chat. */}
-            <label>
-              Chat do curso (opcional)
-              <select name="chat" value={novoCurso.chat} onChange={handleChange}>
-                <option value="">Nenhum</option>
-                {canais.map(c => (
-                  <option key={c.nome} value={c.nome}>{c.label}</option>
-                ))}
-              </select>
+            <label className="curso-comchat-check">
+              <input
+                type="checkbox"
+                name="comChat"
+                checked={novoCurso.comChat}
+                onChange={handleChange}
+              />
+              Curso com chat?
             </label>
+
+            <div className="ranking-methods-field">
+              <span className="ranking-methods-label">Formas de Rankeamento</span>
+              {(novoCurso.rankingMethods || []).map((rm, idx) => (
+                <div key={idx} className="ranking-method-item">
+                  <span className="ranking-method-nome">{rm.nome}</span>
+                  <button
+                    type="button"
+                    className="ranking-method-remove"
+                    onClick={() => removerRankingMethod(idx)}
+                    title="Remover"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              <button type="button" className="ranking-method-add" onClick={adicionarRankingMethod}>
+                + Adicionar
+              </button>
+            </div>
 
             <div className="curso-form-acoes">
               {cursoEditandoId && (

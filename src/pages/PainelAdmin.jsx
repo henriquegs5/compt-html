@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { carregarTodosUsuarios, alterarCargo, removerUsuario } from '../store/usersSlice'
 import { atualizarRole } from '../store/authSlice'
+import { avatarUrl } from '../utils/avatar'
 import Layout from '../components/Layout'
 import './PainelAdmin.css'
 
@@ -119,11 +120,14 @@ export default function PainelAdmin() {
                 {/* Coluna: avatar + nome */}
                 <td>
                   <div className="admin-user-cell">
-                    {user.avatarUrl ? (
-                      <img className="admin-avatar" src={user.avatarUrl} alt={user.name} />
-                    ) : (
-                      <div className="admin-avatar admin-avatar--placeholder">👤</div>
-                    )}
+                    {(() => {
+                      const url = avatarUrl(user)
+                      return url ? (
+                        <img className="admin-avatar" src={url} alt={user.name} />
+                      ) : (
+                        <div className="admin-avatar admin-avatar--placeholder">👤</div>
+                      )
+                    })()}
                     <span>{user.name}</span>
                   </div>
                 </td>

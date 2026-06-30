@@ -28,8 +28,7 @@ router.post('/register', async (req, res) => {
     const newUser = new User({
       name: nome,
       email: emailLower,
-      password: hashedPassword,
-      avatarUrl: `https://i.pravatar.cc/80?u=user_${Date.now()}`
+      password: hashedPassword
     });
     
     const savedUser = await newUser.save();
@@ -131,6 +130,23 @@ router.get(
     try {
       const users = await User.find().sort({ criadoEm: -1 });
       res.json(users);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// GET /auth/users/:id - Retorna dados públicos de um usuário (qualquer logado)
+router.get(
+  '/users/:id',
+  passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id);
+      if (!user) return res.status(404).json({ error: 'Usuário não encontrado.' });
+
+      const { name, avatarUrl, bio, role, criadoEm } = user.toJSON();
+      res.json({ name, avatarUrl, bio, role, criadoEm, uid: req.params.id });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

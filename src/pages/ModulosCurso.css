@@ -291,3 +291,88 @@
   border-color: var(--error);
   color: var(--error);
 }
+
+/* =====================================================
+   Seção de Estatísticas do Curso
+   ===================================================== */
+.curso-stats-section {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  max-width: 680px;
+}
+
+.curso-stats-section h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: .3rem;
+}
+
+.curso-stats-sub {
+  font-size: .85rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.curso-stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+  margin-bottom: 1rem;
+}
+
+.curso-stat-label {
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: .3rem;
+  display: block;
+}
+
+.curso-stat-row {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+.curso-stat-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: .55rem .8rem;
+  font-family: inherit;
+  font-size: .9rem;
+  transition: border-color var(--transition);
+}
+.curso-stat-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.curso-stat-toggle {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  cursor: pointer;
+  font-size: .75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.curso-stat-toggle input[type="checkbox"] {
+  accent-color: var(--primary);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.curso-stat-toggle span {
+  line-height: 1;
+}
+
+.curso-stats-section .btn-salvar {
+  margin-top: .5rem;
+}

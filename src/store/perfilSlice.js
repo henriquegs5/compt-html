@@ -26,6 +26,40 @@ export const fetchPerfil = createAsyncThunk(
   }
 )
 
+export const fetchUserById = createAsyncThunk(
+  'perfil/fetchUserById',
+  async (userId, { rejectWithValue }) => {
+    const token = getToken()
+    if (!token) return rejectWithValue('Nenhum token encontrado')
+    try {
+      const res = await fetch(`${API}/auth/users/${userId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (!res.ok) throw new Error('Erro ao buscar usuário')
+      return await res.json()
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+export const fetchEstatisticasPublicas = createAsyncThunk(
+  'perfil/fetchEstatisticasPublicas',
+  async (userId, { rejectWithValue }) => {
+    const token = getToken()
+    if (!token) return rejectWithValue('Nenhum token encontrado')
+    try {
+      const res = await fetch(`${API}/estatisticas/user/${userId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (!res.ok) throw new Error('Erro ao buscar estatísticas')
+      return await res.json()
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
 export const atualizarPerfilBackend = createAsyncThunk(
   'perfil/atualizarPerfilBackend',
   async (dados, { rejectWithValue }) => {
@@ -56,6 +90,9 @@ const perfilSlice = createSlice({
     dados:  null,
     status: 'idle',
     erro:   null,
+    perfilVisitado: null,
+    perfilVisitadoStatus: 'idle',
+    perfilVisitadoStats: [],
   },
 
   reducers: {
@@ -92,6 +129,17 @@ const perfilSlice = createSlice({
       .addCase(fazerCadastro.fulfilled, (state, action) => {
         state.status = 'succeeded'
         state.dados  = action.payload
+      })
+
+      .addCase(fetchUserById.pending, (state) => { state.perfilVisitadoStatus = 'loading' })
+      .addCase(fetchUserById.fulfilled, (state, action) => {
+        state.perfilVisitadoStatus = 'succeeded'
+        state.perfilVisitado = action.payload
+      })
+      .addCase(fetchUserById.rejected, (state) => { state.perfilVisitadoStatus = 'failed' })
+
+      .addCase(fetchEstatisticasPublicas.fulfilled, (state, action) => {
+        state.perfilVisitadoStats = action.payload
       })
 
       // LOGOUT → limpa o perfil da memória do Redux

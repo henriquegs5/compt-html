@@ -18,6 +18,7 @@ import modulosRoutes from './routes/modulos.js';
 import mensagensRoutes from './routes/mensagens.js';
 import canaisRoutes from './routes/canais.js';
 import atualizacoesRoutes from './routes/atualizacoes.js';
+import estatisticasRoutes from './routes/estatisticas.js';
 import { seedAdmin } from './seedAdmin.js';
 import { seedCanais } from './seedCanais.js';
 
@@ -65,6 +66,7 @@ app.use('/modulos', modulosRoutes);
 app.use('/mensagens', mensagensRoutes);
 app.use('/canais', canaisRoutes);
 app.use('/atualizacoes', atualizacoesRoutes);
+app.use('/estatisticas', estatisticasRoutes);
 
 // Iniciar servidor
 app.listen(PORT, () => {
