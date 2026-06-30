@@ -83,6 +83,13 @@ export default function ModulosCurso() {
     status: progressoDosModulos[m.id] ?? 'locked',
   }))
 
+  // Termo de pesquisa de módulos (filtra por título e descrição)
+  const [termoPesquisa, setTermoPesquisa] = useState('')
+  const modulosFiltrados = modulosDosCurso.filter(mod =>
+    mod.titulo.toLowerCase().includes(termoPesquisa.toLowerCase()) ||
+    (mod.descricao || '').toLowerCase().includes(termoPesquisa.toLowerCase())
+  )
+
   // Usuário logado — usado para controle de permissão (admin/moderador)
   const usuario = useSelector(s => s.auth.usuario)
   const isAdMod = usuario?.role === 'admin' || usuario?.role === 'moderador'
@@ -319,13 +326,25 @@ export default function ModulosCurso() {
         </div>
       </div>
 
-      <input type="text" className="page-search" placeholder="Pesquisar módulo..." style={{ marginTop: '1.5rem' }} />
+      <input
+        type="text"
+        className="page-search"
+        placeholder="Pesquisar módulo..."
+        style={{ marginTop: '1.5rem' }}
+        value={termoPesquisa}
+        onChange={e => setTermoPesquisa(e.target.value)}
+      />
       {/* Mensagem de carregamento enquanto os módulos chegam da API */}
       {modulosStatus === 'loading' && <p className="loading-msg">Carregando módulos...</p>}
 
+      {/* Nenhum módulo bateu com a busca */}
+      {termoPesquisa && modulosFiltrados.length === 0 && (
+        <p className="loading-msg">Nenhum módulo encontrado para "{termoPesquisa}".</p>
+      )}
+
       {/* Grade de cards — um card por módulo do curso */}
       <div className="module-grid">
-        {modulosDosCurso.map(mod => (
+        {modulosFiltrados.map(mod => (
           // Ao clicar no card, abre o modal com as ações daquele módulo
           <div
             className="module-card"
