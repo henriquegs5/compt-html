@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { getToken } from './authSlice'
-
-const API = 'http://localhost:3001'
+import { API } from '../config'
 
 async function parseRes(res) {
   const text = await res.text()

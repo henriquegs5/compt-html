@@ -12,7 +12,7 @@
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
-const API = 'http://localhost:3001'
+import { API } from '../config'
 
 // Carrega sessão (token e user) do localStorage ao iniciar
 function carregarSessao() {

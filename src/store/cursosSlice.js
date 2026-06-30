@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/too
 import { getToken } from './authSlice'
 
 // Endereço base do servidor de dados (json-server rodando na porta 3001)
-const API = 'http://localhost:3001'
+import { API } from '../config'
 
 // ============================================================
 // EntityAdapters

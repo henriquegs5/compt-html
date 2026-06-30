@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { getToken } from './authSlice'
 //maia
-const API = 'http://localhost:3001'
+import { API } from '../config'
 
 // Garante que os "baldes" de estado de um canal existam antes de usá-los.
 // Como os canais agora são dinâmicos, não dá para pré-criar tudo no

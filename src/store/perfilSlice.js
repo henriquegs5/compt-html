@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { fazerLogin, fazerCadastro, fazerLogout, getToken } from './authSlice'
 
-const API = 'http://localhost:3001'
+import { API } from '../config'
 
 export const fetchPerfil = createAsyncThunk(
   'perfil/fetchPerfil',

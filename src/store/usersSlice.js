@@ -12,7 +12,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { getToken } from './authSlice'
 
-const API = 'http://localhost:3001'
+import { API } from '../config'
 
 // ---- Thunks ----
 

@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { getToken } from './authSlice'
 //maia
-const API = 'http://localhost:3001'
+import { API } from '../config'
 
 // Busca os módulos do back-end
 // A rota GET /modulos é protegida por JWT, então precisamos enviar
