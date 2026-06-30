@@ -16,8 +16,7 @@ router.get('/', async (req, res) => {
     const mensagens = await Message.find({ canal })
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit)
-      .lean();
+      .limit(limit);
 
     // Como as mensagens vêm do banco da mais recente para a mais antiga (decrescente),
     // precisamos inverter a ordem para exibir na tela (a mais antiga no topo).
@@ -60,7 +59,7 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), async (req,
     }
 
     // Apenas o autor pode editar
-    if (mensagem.authorUid !== req.user.id) {
+    if (String(mensagem.authorUid) !== String(req.user.id)) {
       return res.status(403).json({ error: 'Você só pode editar suas próprias mensagens.' });
     }
 
@@ -84,7 +83,7 @@ router.delete('/:id', passport.authenticate('jwt', { session: false }), async (r
     }
 
     // Pode excluir se for o autor OU admin/moderador
-    const isAutor = mensagem.authorUid === req.user.id;
+    const isAutor = String(mensagem.authorUid) === String(req.user.id);
     const isAdminMod = req.user.role === 'admin' || req.user.role === 'moderador';
 
     if (!isAutor && !isAdminMod) {
