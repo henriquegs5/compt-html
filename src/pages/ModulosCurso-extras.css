@@ -179,3 +179,14 @@
   width: auto;
   cursor: pointer;
 }
+
+/* ---- Chat do curso (na página de módulos do curso) ---- */
+.curso-chat-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.curso-chat-section h2 {
+  margin-bottom: 1rem;
+}

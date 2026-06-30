@@ -118,7 +118,7 @@ export const fetchProgressoGeral = createAsyncThunk(
  */
 export const adicionarCurso = createAsyncThunk(
   'cursos/adicionarCurso',
-  async ({ titulo, descricao, imagem, pago, preco, horas }) => {
+  async ({ titulo, descricao, imagem, pago, preco, horas, chat }) => {
     // Monta o objeto inicial a ser enviado para a API
     const novoCurso = {
       id: String(Date.now()),
@@ -127,7 +127,8 @@ export const adicionarCurso = createAsyncThunk(
       imagem: imagem || 'default.jpg',
       pago: pago || false,
       preco: preco || 0,
-      horas: horas || 0
+      horas: horas || 0,
+      chat: chat || ''
     }
 
     const sessao = JSON.parse(localStorage.getItem('compt_session'));
@@ -165,14 +166,15 @@ export const adicionarCurso = createAsyncThunk(
  */
 export const editarCurso = createAsyncThunk(
   'cursos/editarCurso',
-  async ({ id, titulo, descricao, imagem, pago, preco, horas }) => {
+  async ({ id, titulo, descricao, imagem, pago, preco, horas, chat }) => {
     const dadosAtualizados = {
       titulo,
       descricao,
       imagem: imagem || 'default.jpg',
       pago,
       preco,
-      horas
+      horas,
+      chat: chat || ''
     }
 
     const sessao = JSON.parse(localStorage.getItem('compt_session'));

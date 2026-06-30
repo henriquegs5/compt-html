@@ -14,6 +14,7 @@ import {
 import Layout from '../components/Layout'
 import Modal from '../components/Modal'
 import { IMAGENS_CURSO, srcImagemCurso } from '../utils/imagemCurso'
+import { fetchCanais } from '../store/chatSlice'
 import './Cursos.css'
 import './Cursos-extras.css'
 
@@ -35,6 +36,8 @@ export default function Cursos() {
   const matriculados = useSelector(s => s.cursos.matriculados)
   const matriculadosStatus = useSelector(s => s.cursos.matriculadosStatus)
   const usuario = useSelector(s => s.auth.usuario)
+  // Canais de chat disponíveis — usados no seletor "Chat do curso"
+  const canais = useSelector(s => s.chat.canais)
 
   const podeAdicionar = usuario?.role === 'admin' || usuario?.role === 'moderador'
 
@@ -50,11 +53,13 @@ export default function Cursos() {
     imagem: '',
     pago: false,
     preco: 0,
-    horas: 0
+    horas: 0,
+    chat: ''
   })
 
   useEffect(() => {
     if (status === 'idle') dispatch(fetchCursos())
+    dispatch(fetchCanais())
     if (usuario && matriculadosStatus === 'idle') dispatch(fetchCursosMatriculados())
   }, [dispatch, status, matriculadosStatus, usuario])
 
@@ -76,7 +81,7 @@ export default function Cursos() {
    * @function abrirModal
    */
   function abrirModal() {
-    setNovoCurso({ titulo: '', descricao: '', imagem: '', pago: false, preco: 0, horas: 0 })
+    setNovoCurso({ titulo: '', descricao: '', imagem: '', pago: false, preco: 0, horas: 0, chat: '' })
     setCursoEditandoId(null)
     setModalAberto(true)
   }
@@ -93,7 +98,8 @@ export default function Cursos() {
       imagem: curso.imagem || '',
       pago: curso.pago || false,
       preco: curso.preco || 0,
-      horas: curso.horas || 0
+      horas: curso.horas || 0,
+      chat: curso.chat || ''
     })
     setCursoEditandoId(curso.id)
     setModalAberto(true)
@@ -468,6 +474,18 @@ export default function Cursos() {
                 min="0"
                 step="1"
               />
+            </label>
+
+            {/* Chat opcional do curso — escolhe qual canal aparece na página
+                do curso. "Nenhum" = curso sem chat. */}
+            <label>
+              Chat do curso (opcional)
+              <select name="chat" value={novoCurso.chat} onChange={handleChange}>
+                <option value="">Nenhum</option>
+                {canais.map(c => (
+                  <option key={c.nome} value={c.nome}>{c.label}</option>
+                ))}
+              </select>
             </label>
 
             <div className="curso-form-acoes">

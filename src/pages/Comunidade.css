@@ -85,3 +85,20 @@
   transition: opacity var(--transition);
 }
 .msg-delete-btn:hover { opacity: 1; }
+
+/* ---- Criar/excluir canais (admin/moderador) ---- */
+.tab-novo {
+  border-style: dashed;
+}
+
+/* "x" para excluir um canal, dentro do botão da aba */
+.tab-excluir {
+  margin-left: .5rem;
+  opacity: .6;
+  font-size: .8rem;
+  transition: opacity var(--transition), color var(--transition);
+}
+.tab-excluir:hover {
+  opacity: 1;
+  color: #ff6b6b;
+}

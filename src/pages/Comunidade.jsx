@@ -1,49 +1,48 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchMensagens, setCanal, postMensagem } from '../store/chatSlice'
+import { fetchCanais, criarCanal, excluirCanal, setCanal } from '../store/chatSlice'
 import Layout from '../components/Layout'
+import Chat from '../components/Chat'
 import './Comunidade.css'
-//maia
-const CANAIS = ['geral', 'fortnite', 'rainbow', 'clash']
-const LABEL  = { geral: 'GERAL', fortnite: 'FORTNITE', rainbow: 'RAINBOW SIX', clash: 'CLASH ROYALE' }
-
-function formatTime(dateString) {
-  if (!dateString) return ''
-  const d = new Date(dateString)
-  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
-}
 
 export default function Comunidade() {
   const dispatch   = useDispatch()
-  const { mensagens, canalAtivo, status, page, hasMore } = useSelector(s => s.chat)
+  const canais     = useSelector(s => s.chat.canais)
+  const canalAtivo = useSelector(s => s.chat.canalAtivo)
   const usuario    = useSelector(s => s.auth.usuario)
-  const [texto, setTexto] = useState('')
 
+  // Admin e moderador podem criar/excluir canais
+  const podeGerenciar = usuario?.role === 'admin' || usuario?.role === 'moderador'
+
+  // Carrega a lista de canais ao entrar na página
   useEffect(() => {
-    // Busca página 1 ao entrar no canal
-    dispatch(fetchMensagens({ canal: canalAtivo, page: 1 }))
-  }, [dispatch, canalAtivo])
-
-  const msgs = mensagens[canalAtivo] || []
+    dispatch(fetchCanais())
+  }, [dispatch])
 
   function handleCanal(canal) {
     dispatch(setCanal(canal))
   }
 
-  function handleScroll(e) {
-    // Se o scroll chegou no topo, busca mensagens mais antigas (próxima página)
-    if (e.target.scrollTop === 0 && hasMore[canalAtivo] && status !== 'loading') {
-      const nextPage = page[canalAtivo] + 1
-      dispatch(fetchMensagens({ canal: canalAtivo, page: nextPage }))
+  // Cria um canal pedindo o nome ao admin/moderador
+  async function handleCriar() {
+    const label = window.prompt('Nome do novo canal:')
+    if (!label || !label.trim()) return
+    try {
+      await dispatch(criarCanal(label.trim())).unwrap()
+    } catch (err) {
+      alert(`Não foi possível criar o canal: ${err}`)
     }
   }
 
-  function enviar() {
-    const text = texto.trim()
-    if (!text) return
-    // Usa a API real para enviar e salvar a mensagem no MongoDB
-    dispatch(postMensagem({ canal: canalAtivo, text }))
-    setTexto('')
+  // Exclui um canal (pede confirmação). stopPropagation evita trocar de aba.
+  async function handleExcluir(e, nome) {
+    e.stopPropagation()
+    if (!window.confirm(`Excluir o canal "${nome}" e todas as suas mensagens?`)) return
+    try {
+      await dispatch(excluirCanal(nome)).unwrap()
+    } catch (err) {
+      alert(`Não foi possível excluir o canal: ${err}`)
+    }
   }
 
   return (
@@ -51,45 +50,37 @@ export default function Comunidade() {
       <h1 className="title">Comunidade</h1>
 
       <div className="chat-tabs">
-        {CANAIS.map(c => (
+        {canais.map(c => (
           <button
-            key={c}
-            className={`tab${canalAtivo === c ? ' active' : ''}`}
-            onClick={() => handleCanal(c)}
+            key={c.nome}
+            className={`tab${canalAtivo === c.nome ? ' active' : ''}`}
+            onClick={() => handleCanal(c.nome)}
           >
-            {LABEL[c]}
+            {c.label}
+            {/* Botão de excluir — só admin/mod e nunca no canal 'geral' */}
+            {podeGerenciar && c.nome !== 'geral' && (
+              <span
+                className="tab-excluir"
+                title="Excluir canal"
+                onClick={(e) => handleExcluir(e, c.nome)}
+              >
+                ✕
+              </span>
+            )}
           </button>
         ))}
-      </div>
 
-      <div className="chat-box" id="chatBox" onScroll={handleScroll}>
-        {status === 'loading' && <p className="chat-empty">Carregando mensagens antigas...</p>}
-        {status !== 'loading' && msgs.length === 0 && (
-          <p className="chat-empty">Nenhuma mensagem ainda. Seja o primeiro!</p>
+        {/* Botão de criar canal — só admin/moderador */}
+        {podeGerenciar && (
+          <button className="tab tab-novo" onClick={handleCriar} title="Criar canal">
+            + Novo canal
+          </button>
         )}
-        {msgs.map((msg, i) => {
-          const isOwn = msg.authorName === usuario?.name
-          return (
-            <div key={msg.id || i} className={`message${isOwn ? ' message--own' : ''}`}>
-              <span className="msg-user">{msg.authorName}</span>
-              <span className="msg-text">{msg.text}</span>
-              <span className="msg-time">{formatTime(msg.createdAt)}</span>
-            </div>
-          )
-        })}
       </div>
 
-      <div className="chat-input">
-        <input
-          type="text"
-          id="chatInput"
-          value={texto}
-          onChange={e => setTexto(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && enviar()}
-          placeholder="Digite sua mensagem..."
-        />
-        <button onClick={enviar}>Enviar</button>
-      </div>
+      {/* A caixa de mensagens e o input vêm do componente Chat,
+          reutilizado também na página do curso. */}
+      {canalAtivo && <Chat canal={canalAtivo} />}
     </Layout>
   )
 }

@@ -32,6 +32,7 @@ import {
 import Layout from '../components/Layout'
 import Modal  from '../components/Modal'
 import Toast  from '../components/Toast'
+import Chat   from '../components/Chat'
 import { youtubeEmbedUrl, youtubeThumbnail } from '../utils/youtube'
 import './ModulosCurso.css'
 import './ModulosCurso-extras.css'
@@ -346,6 +347,14 @@ export default function ModulosCurso() {
           </button>
         )}
       </div>
+
+      {/* --- CHAT DO CURSO --- só aparece se um canal foi configurado no curso */}
+      {curso?.chat && (
+        <div className="curso-chat-section">
+          <h2>💬 Chat do curso</h2>
+          <Chat canal={curso.chat} />
+        </div>
+      )}
 
       {/* --- SEÇÃO DE AVALIAÇÕES --- */}
       <div className="reviews-section">

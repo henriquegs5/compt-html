@@ -16,7 +16,9 @@ import authRoutes from './routes/auth.js';
 import cursosRoutes from './routes/cursos.js';
 import modulosRoutes from './routes/modulos.js';
 import mensagensRoutes from './routes/mensagens.js';
+import canaisRoutes from './routes/canais.js';
 import { seedAdmin } from './seedAdmin.js';
+import { seedCanais } from './seedCanais.js';
 
 // Carrega o .env a partir da pasta deste arquivo (backend/), e não do
 // diretório onde o comando foi executado. Sem isso, ao rodar "npm run api"
@@ -48,8 +50,9 @@ mongoose.connect(MONGO_URI)
     // Cria o usuário admin se ele não existir no banco
     try {
       await seedAdmin();
+      await seedCanais();
     } catch (seedErr) {
-      console.error('❌ Erro ao semear usuário admin:', seedErr);
+      console.error('❌ Erro ao semear dados iniciais:', seedErr);
     }
   })
   .catch(err => console.error('❌ Erro ao conectar no MongoDB:', err));
@@ -59,6 +62,7 @@ app.use('/auth', authRoutes);
 app.use('/cursos', cursosRoutes);
 app.use('/modulos', modulosRoutes);
 app.use('/mensagens', mensagensRoutes);
+app.use('/canais', canaisRoutes);
 
 // Iniciar servidor
 app.listen(PORT, () => {
