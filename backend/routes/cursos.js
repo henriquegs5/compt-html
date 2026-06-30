@@ -31,24 +31,32 @@ const requireAdmin = (req, res, next) => {
 router.get('/', optionalAuth, async (req, res) => {
   try {
     const isAdminOrMod = req.user && (req.user.role === 'admin' || req.user.role === 'moderador');
-    let cursos = await Curso.find().lean();
-    
-    // Computa dinamicamente a quantidade de módulos e avaliações de cada curso
-    let cursosEnriquecidos = await Promise.all(cursos.map(async (curso) => {
-      const totalModulos = await Modulo.countDocuments({ cursoId: curso._id });
-      
-      const reviews = await Review.find({ cursoId: curso._id });
-      const totalAvaliacoes = reviews.length;
-      const mediaAvaliacoes = totalAvaliacoes > 0 
-        ? reviews.reduce((acc, curr) => acc + curr.nota, 0) / totalAvaliacoes 
-        : 0;
 
-      const cursoEnriquecido = { 
-        ...curso, 
-        totalModulos, 
-        totalAvaliacoes,
-        mediaAvaliacoes,
-        id: curso._id.toString() 
+    // Em vez de ~2 consultas por curso (N+1), fazemos 3 no total:
+    //  - todos os cursos
+    //  - contagem de módulos agrupada por cursoId
+    //  - total e média de avaliações agrupados por cursoId
+    const [cursos, contagemModulos, statsReviews] = await Promise.all([
+      Curso.find().lean(),
+      Modulo.aggregate([{ $group: { _id: '$cursoId', total: { $sum: 1 } } }]),
+      Review.aggregate([{ $group: { _id: '$cursoId', total: { $sum: 1 }, media: { $avg: '$nota' } } }]),
+    ]);
+
+    // Mapas cursoId -> valor para lookup O(1) em memória
+    const modulosPorCurso = new Map(contagemModulos.map(m => [String(m._id), m.total]));
+    const reviewsPorCurso = new Map(statsReviews.map(r => [String(r._id), r]));
+
+    let cursosEnriquecidos = cursos.map((curso) => {
+      const cid = String(curso._id);
+      const totalModulos = modulosPorCurso.get(cid) || 0;
+      const review = reviewsPorCurso.get(cid);
+
+      const cursoEnriquecido = {
+        ...curso,
+        totalModulos,
+        totalAvaliacoes: review ? review.total : 0,
+        mediaAvaliacoes: review ? review.media : 0,
+        id: cid,
       };
 
       if (isAdminOrMod && totalModulos === 0) {
@@ -56,8 +64,8 @@ router.get('/', optionalAuth, async (req, res) => {
       }
 
       return cursoEnriquecido;
-    }));
-    
+    });
+
     // Filtra cursos vazios se o usuário não for admin/moderador
     if (!isAdminOrMod) {
       cursosEnriquecidos = cursosEnriquecidos.filter(c => c.totalModulos > 0);
