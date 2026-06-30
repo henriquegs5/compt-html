@@ -200,3 +200,14 @@
   border-radius: 999px;
   backdrop-filter: blur(2px);
 }
+
+/* ---- Seções "Meus Cursos" / "Cursos Disponíveis" (sem abas) ---- */
+.cursos-secao {
+  margin-top: 2rem;
+}
+
+.cursos-secao-titulo {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}

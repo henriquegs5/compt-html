@@ -38,7 +38,6 @@ export default function Cursos() {
 
   const podeAdicionar = usuario?.role === 'admin' || usuario?.role === 'moderador'
 
-  const [activeTab, setActiveTab] = useState('disponiveis')
   const [modalAberto, setModalAberto] = useState(false)
   const [cursoEditandoId, setCursoEditandoId] = useState(null)
   const [termoPesquisa, setTermoPesquisa] = useState('')
@@ -63,16 +62,18 @@ export default function Cursos() {
 
   const listaMatriculados = Array.isArray(matriculados) ? matriculados : []
 
-  const cursosPorAba = items.filter(curso => {
-    const isMatriculado = listaMatriculados.includes(curso.id)
-    if (activeTab === 'matriculados') return isMatriculado
-    return !isMatriculado
-  })
-
-  const cursosFiltrados = cursosPorAba.filter(curso =>
+  // Filtro de busca aplicado às duas seções (Meus Cursos e Disponíveis)
+  const matchBusca = (curso) =>
     curso.titulo.toLowerCase().includes(termoPesquisa.toLowerCase()) ||
     curso.descricao.toLowerCase().includes(termoPesquisa.toLowerCase())
-  )
+
+  // Meus Cursos = cursos em que o usuário está matriculado
+  const meusCursos = usuario
+    ? items.filter(c => listaMatriculados.includes(c.id) && matchBusca(c))
+    : []
+
+  // Cursos Disponíveis = todos os que o usuário ainda não está matriculado
+  const cursosDisponiveis = items.filter(c => !listaMatriculados.includes(c.id) && matchBusca(c))
 
   /**
    * Abre o modal limpo para a criação de um novo curso.
@@ -230,27 +231,126 @@ export default function Cursos() {
     setModalAberto(false)
   }
 
+  /**
+   * Renderiza o card de um curso. Extraído para reuso nas duas seções
+   * (Meus Cursos e Cursos Disponíveis).
+   * @function renderCursoCard
+   * @param {Object} curso
+   */
+  function renderCursoCard(curso) {
+    const podeEditarCurso = usuario && (
+      usuario.role === 'admin' ||                  // admin edita qualquer curso
+      curso.criadorId === usuario.id ||            // criador edita o próprio
+      (!curso.criadorId && podeAdicionar)          // curso sem criador: admin/mod
+    )
+
+    return (
+      <div className="curso-card" key={curso.id}>
+        <div className="curso-image">
+          <img
+            src={srcImagemCurso(curso.imagem)}
+            alt={curso.titulo}
+            // onLoad reexibe a imagem caso ela tenha sido escondida antes:
+            // sem isso, um curso sem capa que ganha uma imagem só apareceria
+            // após F5, pois o display:none setado no onError ficava no DOM.
+            onLoad={e => e.target.style.display = ''}
+            onError={e => e.target.style.display = 'none'}
+          />
+          <div className="curso-overlay" />
+
+          {/* Símbolo de criador: aparece quando o curso foi criado por você */}
+          {usuario && curso.criadorId === usuario.id && (
+            <span className="curso-criador-badge" title="Você é o criador deste curso">
+              👑 Criador
+            </span>
+          )}
+        </div>
+
+        {podeEditarCurso && (
+          <button
+            className="btn-editar-curso"
+            onClick={() => abrirModalEdicao(curso)}
+            title="Editar curso"
+          >
+            ✏️
+          </button>
+        )}
+
+        <div className="curso-body">
+          {curso.rascunho && <span className="curso-badge curso-badge--rascunho">Rascunho (Vazio)</span>}
+          <div className="curso-meta">
+            {curso.horas > 0 && <span className="curso-badge curso-badge--horas">⏱ {curso.horas}h</span>}
+            <span className="curso-badge curso-badge--rating">
+              ★ {curso.mediaAvaliacoes ? curso.mediaAvaliacoes.toFixed(1) : 'Novo'}
+              {curso.totalAvaliacoes > 0 && ` (${curso.totalAvaliacoes})`}
+            </span>
+            {curso.pago ? (
+              <span className="curso-badge curso-badge--pago">R$ {curso.preco.toFixed(2)}</span>
+            ) : (
+              <span className="curso-badge curso-badge--gratis">Grátis</span>
+            )}
+          </div>
+
+          <h2 className="curso-titulo">{curso.titulo}</h2>
+          <p className="curso-descricao">{curso.descricao}</p>
+
+          <div className="curso-footer">
+            <span className="curso-modulos-count">
+              {curso.totalModulos} módulos
+            </span>
+
+            {matriculados.includes(curso.id) || podeAdicionar ? (
+              <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                <button
+                  className="btn-abrir-curso"
+                  style={{ flex: 1 }}
+                  onClick={() => navigate(`/cursos/${curso.id}`)}
+                >
+                  Abrir curso
+                </button>
+                {matriculados.includes(curso.id) && (
+                  <button
+                    className="btn-abrir-curso"
+                    style={{ flex: 0, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                    onClick={() => dispatch(desmatricularCurso(curso.id))}
+                    title="Cancelar Matrícula"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            ) : curso.pago ? (
+              <button
+                className="btn-abrir-curso btn-comprar-curso"
+                onClick={() => {
+                  if (!usuario) {
+                    alert('Você precisa fazer login para comprar este curso.')
+                    navigate('/login')
+                  } else {
+                    navigate(`/pagamento/${curso.id}`)
+                  }
+                }}
+              >
+                Comprar · R$ {curso.preco.toFixed(2)}
+              </button>
+            ) : (
+              <button
+                className="btn-abrir-curso btn-matricular-curso"
+                onClick={() => handleMatricular(curso.id)}
+              >
+                Matricular
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <Layout>
-      <h1 className="title">Cursos Disponíveis</h1>
+      <h1 className="title">Cursos</h1>
       <p className="subtitle">Escolha um curso para ver os módulos</p>
-
-      {usuario && (
-        <div className="cursos-tabs">
-          <button 
-            className={`cursos-tab ${activeTab === 'disponiveis' ? 'cursos-tab--active' : ''}`}
-            onClick={() => setActiveTab('disponiveis')}
-          >
-            Cursos Disponíveis
-          </button>
-          <button 
-            className={`cursos-tab ${activeTab === 'matriculados' ? 'cursos-tab--active' : ''}`}
-            onClick={() => setActiveTab('matriculados')}
-          >
-            Meus Cursos
-          </button>
-        </div>
-      )}
 
       <input
         type="text"
@@ -262,131 +362,40 @@ export default function Cursos() {
 
       {status === 'loading' && <p className="loading-msg">Carregando cursos...</p>}
 
-      <div className="cursos-grid">
-        {cursosFiltrados.length === 0 && termoPesquisa && (
-          <p className="loading-msg">Nenhum curso encontrado para "{termoPesquisa}".</p>
-        )}
-        {cursosFiltrados.map(curso => {
-          const podeEditarCurso = usuario && (
-            usuario.role === 'admin' ||                  // admin edita qualquer curso
-            curso.criadorId === usuario.id ||            // criador edita o próprio
-            (!curso.criadorId && podeAdicionar)          // curso sem criador: admin/mod
-          );
+      {/* Mensagem quando a busca não encontra nada em nenhuma das seções */}
+      {termoPesquisa && meusCursos.length === 0 && cursosDisponiveis.length === 0 && (
+        <p className="loading-msg">Nenhum curso encontrado para "{termoPesquisa}".</p>
+      )}
 
-          return (
-          <div className="curso-card" key={curso.id}>
-            <div className="curso-image">
-              <img
-                src={srcImagemCurso(curso.imagem)}
-                alt={curso.titulo}
-                // onLoad reexibe a imagem caso ela tenha sido escondida antes:
-                // sem isso, um curso sem capa que ganha uma imagem só apareceria
-                // após F5, pois o display:none setado no onError ficava no DOM.
-                onLoad={e => e.target.style.display = ''}
-                onError={e => e.target.style.display = 'none'}
-              />
-              <div className="curso-overlay" />
-
-              {/* Símbolo de criador: aparece quando o curso foi criado por você */}
-              {usuario && curso.criadorId === usuario.id && (
-                <span className="curso-criador-badge" title="Você é o criador deste curso">
-                  👑 Criador
-                </span>
-              )}
-            </div>
-
-            {podeEditarCurso && (
-              <button
-                className="btn-editar-curso"
-                onClick={() => abrirModalEdicao(curso)}
-                title="Editar curso"
-              >
-                ✏️
-              </button>
-            )}
-
-            <div className="curso-body">
-              {curso.rascunho && <span className="curso-badge curso-badge--rascunho">Rascunho (Vazio)</span>}
-              <div className="curso-meta">
-                {curso.horas > 0 && <span className="curso-badge curso-badge--horas">⏱ {curso.horas}h</span>}
-                <span className="curso-badge curso-badge--rating">
-                  ★ {curso.mediaAvaliacoes ? curso.mediaAvaliacoes.toFixed(1) : 'Novo'} 
-                  {curso.totalAvaliacoes > 0 && ` (${curso.totalAvaliacoes})`}
-                </span>
-                {curso.pago ? (
-                  <span className="curso-badge curso-badge--pago">R$ {curso.preco.toFixed(2)}</span>
-                ) : (
-                  <span className="curso-badge curso-badge--gratis">Grátis</span>
-                )}
-              </div>
-              
-              <h2 className="curso-titulo">{curso.titulo}</h2>
-              <p className="curso-descricao">{curso.descricao}</p>
-
-              <div className="curso-footer">
-                <span className="curso-modulos-count">
-                  {curso.totalModulos} módulos
-                </span>
-
-                {matriculados.includes(curso.id) || podeAdicionar ? (
-                  <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
-                    <button
-                      className="btn-abrir-curso"
-                      style={{ flex: 1 }}
-                      onClick={() => navigate(`/cursos/${curso.id}`)}
-                    >
-                      Abrir curso
-                    </button>
-                    {matriculados.includes(curso.id) && (
-                      <button
-                        className="btn-abrir-curso"
-                        style={{ flex: 0, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-                        onClick={() => dispatch(desmatricularCurso(curso.id))}
-                        title="Cancelar Matrícula"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                ) : curso.pago ? (
-                  <button
-                    className="btn-abrir-curso btn-comprar-curso"
-                    onClick={() => {
-                      if (!usuario) {
-                        alert('Você precisa fazer login para comprar este curso.')
-                        navigate('/login')
-                      } else {
-                        navigate(`/pagamento/${curso.id}`)
-                      }
-                    }}
-                  >
-                    Comprar · R$ {curso.preco.toFixed(2)}
-                  </button>
-                ) : (
-                  <button
-                    className="btn-abrir-curso btn-matricular-curso"
-                    onClick={() => handleMatricular(curso.id)}
-                  >
-                    Matricular
-                  </button>
-                )}
-              </div>
-            </div>
+      {/* Seção "Meus Cursos" — só aparece se o usuário está matriculado em algum */}
+      {meusCursos.length > 0 && (
+        <section className="cursos-secao">
+          <h2 className="cursos-secao-titulo">Meus Cursos</h2>
+          <div className="cursos-grid">
+            {meusCursos.map(renderCursoCard)}
           </div>
-        )})}
+        </section>
+      )}
 
-        {podeAdicionar && activeTab === 'disponiveis' && (
-          <button
-            type="button"
-            className="curso-card curso-card--adicionar"
-            onClick={abrirModal}
-            title="Adicionar novo curso"
-          >
-            <span className="curso-adicionar-icone">+</span>
-            <span className="curso-adicionar-texto">Adicionar curso</span>
-          </button>
-        )}
-      </div>
+      {/* Seção "Cursos Disponíveis" — cursos em que o usuário ainda não está matriculado */}
+      <section className="cursos-secao">
+        <h2 className="cursos-secao-titulo">Cursos Disponíveis</h2>
+        <div className="cursos-grid">
+          {cursosDisponiveis.map(renderCursoCard)}
+
+          {podeAdicionar && (
+            <button
+              type="button"
+              className="curso-card curso-card--adicionar"
+              onClick={abrirModal}
+              title="Adicionar novo curso"
+            >
+              <span className="curso-adicionar-icone">+</span>
+              <span className="curso-adicionar-texto">Adicionar curso</span>
+            </button>
+          )}
+        </div>
+      </section>
 
       {modalAberto && (
         <Modal onClose={() => setModalAberto(false)}>
