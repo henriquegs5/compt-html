@@ -4,9 +4,6 @@ import Canal from './models/Canal.js';
 // boot do servidor — assim a Comunidade nunca fica sem os canais originais.
 const CANAIS_PADRAO = [
   { nome: 'geral',    label: 'Geral' },
-  { nome: 'fortnite', label: 'Fortnite' },
-  { nome: 'rainbow',  label: 'Rainbow Six' },
-  { nome: 'clash',    label: 'Clash Royale' },
 ];
 
 export async function seedCanais() {

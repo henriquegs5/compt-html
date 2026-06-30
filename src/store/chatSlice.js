@@ -78,6 +78,39 @@ export const postMensagem = createAsyncThunk(
   }
 )
 
+// Exclui uma mensagem
+export const deleteMensagem = createAsyncThunk(
+  'chat/deleteMensagem',
+  async ({ id, canal }, { rejectWithValue }) => {
+    const res = await fetch(`${API}/mensagens/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${getToken()}` }
+    })
+    const data = await res.json()
+    if (!res.ok) return rejectWithValue(data.error || 'Erro ao excluir mensagem')
+    return { id, canal }
+  }
+)
+
+// Edita uma mensagem
+export const editarMensagem = createAsyncThunk(
+  'chat/editarMensagem',
+  async ({ id, canal, text }, { rejectWithValue }) => {
+    const res = await fetch(`${API}/mensagens/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({ text })
+    })
+    const data = await res.json()
+    if (!res.ok) return rejectWithValue(data.error || 'Erro ao editar mensagem')
+    // Retorna a mensagem atualizada
+    return { canal, mensagem: data }
+  }
+)
+
 const chatSlice = createSlice({
   name: 'chat',
   initialState: {
@@ -150,6 +183,25 @@ const chatSlice = createSlice({
         const msg = action.payload
         garantirCanal(state, msg.canal)
         state.mensagens[msg.canal].push(msg)
+      })
+
+      // Remove a mensagem da lista local
+      .addCase(deleteMensagem.fulfilled, (state, action) => {
+        const { id, canal } = action.payload
+        if (state.mensagens[canal]) {
+          state.mensagens[canal] = state.mensagens[canal].filter(m => m.id !== id)
+        }
+      })
+
+      // Atualiza a mensagem na lista local
+      .addCase(editarMensagem.fulfilled, (state, action) => {
+        const { canal, mensagem } = action.payload
+        if (state.mensagens[canal]) {
+          const index = state.mensagens[canal].findIndex(m => m.id === mensagem.id)
+          if (index !== -1) {
+            state.mensagens[canal][index] = mensagem
+          }
+        }
       })
   },
 })
