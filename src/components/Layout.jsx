@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fazerLogout } from '../store/authSlice'
 import { avatarUrl } from '../utils/avatar'
@@ -14,22 +14,37 @@ export default function Layout({ children }) {
   // para exibir o link do painel de administração no sidebar
   const isAdminOuMod = usuario?.role === 'admin' || usuario?.role === 'moderador'
   
+  const [menuOpen, setMenuOpen] = useState(() => {
+    return sessionStorage.getItem('menuOpen') === 'true'
+  })
+
   // Recupera a cor salva no localStorage ao carregar
   useEffect(() => {
     const savedColor = localStorage.getItem('primaryColor')
     if (savedColor) {
       document.documentElement.style.setProperty('--primary', savedColor)
     }
-    
   }, [])
+
   function handleLogout() {
     dispatch(fazerLogout())
     navigate('/login')
   }
 
+  function handleMenuToggle(e) {
+    const isOpen = e.target.checked
+    setMenuOpen(isOpen)
+    sessionStorage.setItem('menuOpen', isOpen)
+  }
+
   return (
     <>
-      <input type="checkbox" id="menu-toggle" />
+      <input 
+        type="checkbox" 
+        id="menu-toggle" 
+        checked={menuOpen} 
+        onChange={handleMenuToggle} 
+      />
 
       <header className="topbar">
         <label htmlFor="menu-toggle" className="menu-btn">☰</label>

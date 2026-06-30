@@ -52,6 +52,7 @@ export default function Cursos() {
     preco: 0,
     horas: 0,
     comChat: false,
+    chat: '',
     rankingMethods: []
   })
 
@@ -78,7 +79,7 @@ export default function Cursos() {
    * @function abrirModal
    */
   function abrirModal() {
-    setNovoCurso({ titulo: '', descricao: '', imagem: '', pago: false, preco: 0, horas: 0, comChat: false, rankingMethods: [] })
+    setNovoCurso({ titulo: '', descricao: '', imagem: '', pago: false, preco: 0, horas: 0, comChat: false, chat: '', rankingMethods: [] })
     setCursoEditandoId(null)
     setModalAberto(true)
   }
@@ -97,6 +98,7 @@ export default function Cursos() {
       preco: curso.preco || 0,
       horas: curso.horas || 0,
       comChat: !!curso.chat,
+      chat: curso.chat || '',
       rankingMethods: curso.rankingMethods ? curso.rankingMethods.map(r => ({ ...r })) : []
     })
     setCursoEditandoId(curso.id)
@@ -373,7 +375,7 @@ export default function Cursos() {
           </div>
         )})}
 
-        {podeAdicionar && (
+        {podeAdicionar && activeTab === 'disponiveis' && (
           <button
             type="button"
             className="curso-card curso-card--adicionar"

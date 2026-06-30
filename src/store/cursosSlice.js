@@ -122,19 +122,7 @@ export const adicionarCurso = createAsyncThunk(
     let chat = ''
 
     if (comChat) {
-      const slug = slugify(titulo)
-      const token = getToken()
-      const canalRes = await fetch(`${API}/canais`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ label: titulo })
-      })
-      if (canalRes.ok) {
-        const canal = await canalRes.json()
-        chat = canal.nome
-      } else {
-        chat = slug
-      }
+      chat = `curso-${slugify(titulo)}-${Date.now()}`
     }
 
     const novoCurso = {
@@ -193,25 +181,11 @@ function getToken() {
 
 export const editarCurso = createAsyncThunk(
   'cursos/editarCurso',
-  async ({ id, titulo, descricao, imagem, pago, preco, horas, comChat, rankingMethods }) => {
+  async ({ id, titulo, descricao, imagem, pago, preco, horas, comChat, chat: existingChat, rankingMethods }) => {
     let chat = ''
 
     if (comChat) {
-      const slug = slugify(titulo)
-      const token = getToken()
-      const canalRes = await fetch(`${API}/canais`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ label: titulo })
-      })
-      if (canalRes.ok) {
-        const canal = await canalRes.json()
-        chat = canal.nome
-      } else {
-        const err = await canalRes.json().catch(() => ({}))
-        // Se o canal já existe (400), usa o slug mesmo assim
-        chat = slug
-      }
+      chat = existingChat || `curso-${slugify(titulo)}-${Date.now()}`
     }
 
     const dadosAtualizados = {
