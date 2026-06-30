@@ -3,10 +3,9 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import passport from 'passport';
 import User from '../models/User.js';
+import { JWT_SECRET } from '../config/env.js';
 
 const router = express.Router();
-
-const JWT_SECRET = process.env.JWT_SECRET || 'secret_key_super_segura';
 
 // POST /auth/register - Cadastro de novo usuário
 router.post('/register', async (req, res) => {

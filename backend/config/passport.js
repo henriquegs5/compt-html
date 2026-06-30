@@ -1,12 +1,10 @@
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import dotenv from 'dotenv';
 import User from '../models/User.js';
-
-dotenv.config();
+import { JWT_SECRET } from './env.js';
 
 const opts = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: process.env.JWT_SECRET || 'secret_key_super_segura',
+  secretOrKey: JWT_SECRET,
 };
 
 export default (passport) => {
